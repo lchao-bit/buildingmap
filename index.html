@@ -361,6 +361,7 @@
 		//1.15，新的地址访问方式
 		var URL = window.location.href;
     var url1 = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
+    var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
     var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
     //var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/';
 		//var GeoJSONURL = url1 + 'v/{z}/{x}/{y}';
