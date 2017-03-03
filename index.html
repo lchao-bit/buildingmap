@@ -237,6 +237,9 @@
 		var iconcount=0;
 		var labelArray=[];
 		var labelcount=0;
+		
+		var singlelabelArray=[];
+		var singlelabelcount=0;
 		//标记图标和文字标签对象以便处理
 		function myoneach(feature,layer){
 			if(map.getZoom()<feature.properties.minzoom)
@@ -277,12 +280,60 @@
 					labelArray[labelcount]=label;
 					labelcount++;
 					label.setContent(feature.properties.name);
-					label.setLatLng(layer.getBounds().getCenter());
-					map.showLabel(label);			 
+					//label.setLatLng(layer.getBounds().getCenter());
+					//map.showLabel(label);			
+					
+					//道路方向
+						var i=0,j=0;
+						var tlat=0,tlng=0;
+					 	//for(x in layer._latlngs)
+					 	{
+					 			i = layer._latlngs[layer._latlngs.length-1].lat -layer._latlngs[0].lat;
+					 			j = layer._latlngs[layer._latlngs.length-1].lng -layer._latlngs[0].lng;
+					 	}
+					 	if(i > j)
+					 	{
+					 			tlat=12;
+					 	}
+					 	else
+					 		{
+					 				tlng=12;
+					 		}
+					//zc,单字符显示道路名字
+					var str = feature.properties.name;
+					var couts = layer._latlngs.length;
+					
+					for(var i=0;i < str.length;i++)
+					{
+						var tmplabel = new L.Label();
+						singlelabelArray[singlelabelcount]=tmplabel;
+						singlelabelcount++;
+						tmplabel.setContent(str.substr(i,1));
+						//var t = Math.round(couts/2) + i;
+						
+					 	//var t=map.project(layer._latlngs[0]);
+					  var t=map.project(layer.getBounds().getCenter());
+					 	t.x=t.x+tlat*(i-1);
+					 	t.y=t.y+tlng*(i-1);
+					 	var t1=map.unproject(t);
+						tmplabel.setLatLng(t1);
+						map.showLabel(tmplabel);	
+					}
+					
+					//labelArray[labelcount]=feature.properties.name;
+					//var str = feature.properties.name;
+					//var tmplabel = new L.Label();
+					/*for(var i=0;i < str.length;i++)
+					{
+						label.setContent(str.substr(i,1));
+						label.setLatLng(layer.getBounds().getCenter());
+						map.showLabel(label);	
+					}*/
 				}
 			}
 			//在缩放15级以上添加文字标签
 		};
+
 		function myLowfilter(feature,layer){
 			if(map.getZoom()<feature.properties.minzoom)
 			{
@@ -359,12 +410,12 @@
 		//var GeoJSONURL = 'http://166.111.68.197:11193/geoserver/v/{z}/{x}/{y}';
 		//var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver';
 		//1.15，新的地址访问方式
-    //var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/';
-		//var GeoJSONURL = url1 + 'v/{z}/{x}/{y}';
 		var URL = window.location.href;
     var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
     URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
     var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
+    //var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/';
+		//var GeoJSONURL = url1 + 'v/{z}/{x}/{y}';
 		
 		var GeoJSONLowLayer = new L.TileLayer.GeoJSON(GeoJSONURL,{maxZoom:19,minZoom:13},
 		{
