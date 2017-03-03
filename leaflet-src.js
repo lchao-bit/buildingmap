@@ -2582,6 +2582,14 @@ L.TileLayer = L.Class.extend({
 				delete lArray[x];
 				labelcount--;
 			}
+			//zc,É¾³ýµ¥×Ö·ûÏÔÊ¾
+			var slArray=singlelabelArray;
+			for(x in slArray)
+			{
+				slArray[x].close();
+				delete slArray[x];
+				singlelabelcount--;
+			}
 			this._reset({hard: true});
 			this._update();
 		}
