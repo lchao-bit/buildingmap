@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">  <!-- zc,Éù Ã÷ ÍøÒ³ÓïÑÔ --> 
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">  <!-- zc,å£° æ˜ ç½‘é¡µè¯­è¨€ --> 
 <head>
-    <meta charset="utf-8" />  <!-- zc,Ê¹ÓÃÖĞÎÄ -->
+    <meta charset="utf-8" />  <!-- zc,ä½¿ç”¨ä¸­æ–‡ -->
     <title>Leaflet test</title>
 	<style>
 		#map { height: 800px; }
@@ -15,10 +15,10 @@
 	<script src="leaflet.label.js"></script>
 	<script src="OSMBuildings-Leaflet.debug.js"></script>
 	
-	<!-- ¿âÎÄ¼şµÄÌí¼Ó -->
+	<!-- åº“æ–‡ä»¶çš„æ·»åŠ  -->
 </head>
 <body>
-		<!-- zc,Ìí¼ÓÂ·¿ö°´Å¥ -->
+		<!-- zc,æ·»åŠ è·¯å†µæŒ‰é’® -->
 	
 <div>
 		<select name="select year" id="select year">
@@ -34,56 +34,56 @@
     </select>
     
 		<select name="select hour" id="select hour">
-	 	 <option value="0">0µã</option>
-		  <option value="1">1µã</option>
-		  <option value="2">2µã</option>
-		  <option value="3">3µã</option>
-		  <option value="4">4µã</option>
-		  <option value="5">5µã</option>
-		  <option value="6">6µã</option>
-		  <option value="7">7µã</option>
-		  <option value="8">8µã</option>
-		  <option value="9">9µã</option>
-		  <option value="10">10µã</option>
-		  <option value="11">11µã</option>
-		  <option value="12">12µã</option>
-		  <option value="13">13µã</option>
-		  <option value="14">14µã</option>
-		  <option value="15">15µã</option>
-		  <option value="16">16µã</option>
-		  <option value="17">17µã</option>
-		  <option value="18">18µã</option>
-		  <option value="19">19µã</option>
-		  <option value="20">20µã</option>
-		  <option value="21">21µã</option>
-		  <option value="22">22µã</option>
-		  <option value="23">23µã</option>
+	 	 <option value="0">0ç‚¹</option>
+		  <option value="1">1ç‚¹</option>
+		  <option value="2">2ç‚¹</option>
+		  <option value="3">3ç‚¹</option>
+		  <option value="4">4ç‚¹</option>
+		  <option value="5">5ç‚¹</option>
+		  <option value="6">6ç‚¹</option>
+		  <option value="7">7ç‚¹</option>
+		  <option value="8">8ç‚¹</option>
+		  <option value="9">9ç‚¹</option>
+		  <option value="10">10ç‚¹</option>
+		  <option value="11">11ç‚¹</option>
+		  <option value="12">12ç‚¹</option>
+		  <option value="13">13ç‚¹</option>
+		  <option value="14">14ç‚¹</option>
+		  <option value="15">15ç‚¹</option>
+		  <option value="16">16ç‚¹</option>
+		  <option value="17">17ç‚¹</option>
+		  <option value="18">18ç‚¹</option>
+		  <option value="19">19ç‚¹</option>
+		  <option value="20">20ç‚¹</option>
+		  <option value="21">21ç‚¹</option>
+		  <option value="22">22ç‚¹</option>
+		  <option value="23">23ç‚¹</option>
 	  </select>
 		<select name="select minute" id="select minute">
-		   <option value="1">0-4·Ö</option>
-		  <option value="2">5-9·Ö</option>
-		  <option value="3">10-14·Ö</option>
-		  <option value="4">15-19·Ö</option>
-		  <option value="5">20-24·Ö</option>
-		  <option value="6">24-29·Ö</option>
-		  <option value="7">30-34·Ö</option>
-		  <option value="8">35-39·Ö</option>
-		  <option value="9">40-44·Ö</option>
-		  <option value="10">45-49·Ö</option>
-		  <option value="11">50-54·Ö</option>
-		  <option value="12">55-59·Ö</option>
+		   <option value="1">0-4åˆ†</option>
+		  <option value="2">5-9åˆ†</option>
+		  <option value="3">10-14åˆ†</option>
+		  <option value="4">15-19åˆ†</option>
+		  <option value="5">20-24åˆ†</option>
+		  <option value="6">24-29åˆ†</option>
+		  <option value="7">30-34åˆ†</option>
+		  <option value="8">35-39åˆ†</option>
+		  <option value="9">40-44åˆ†</option>
+		  <option value="10">45-49åˆ†</option>
+		  <option value="11">50-54åˆ†</option>
+		  <option value="12">55-59åˆ†</option>
 		</select>
-	<button id="road map">ÏÔÊ¾Â·¿ö</button>
-	<button id="road map close">È¡ÏûÏÔÊ¾Â·¿ö</button>
+	<button id="road map">æ˜¾ç¤ºè·¯å†µ</button>
+	<button id="road map close">å–æ¶ˆæ˜¾ç¤ºè·¯å†µ</button>
 	</div>
-	<!-- zc,Ìí¼ÓÂ·¿ö½áÊø -->
+	<!-- zc,æ·»åŠ è·¯å†µç»“æŸ -->
 	<div id="map">
 	</div>	
-	<!-- zc,×¢²áÊÂ¼şº¯Êı,ä¯ÀÀÆ÷µã»÷ÊÂ¼ş -->
+	<!-- zc,æ³¨å†Œäº‹ä»¶å‡½æ•°,æµè§ˆå™¨ç‚¹å‡»äº‹ä»¶ -->
 	<script>
-		var roadCondition_flag=0;//Â·¿ö´¥·¢ĞÅºÅ
+		var roadCondition_flag=0;//è·¯å†µè§¦å‘ä¿¡å·
 		//var countFlag=0;
-		var roadConditionTime = 1; //Â·¿öÊ±¼ä²ÎÊı
+		var roadConditionTime = 1; //è·¯å†µæ—¶é—´å‚æ•°
 		
   	document.getElementById('road map').onclick = function(){
     	//road_flag = 1;
@@ -116,14 +116,14 @@
   		map.removeLayer(GeoJSONRoadConditionLayer);
   	}
 	</script>
-	<!-- zc,ä¯ÀÀÆ÷µã»÷ÊÂ¼ş½áÊø -->
+	<!-- zc,æµè§ˆå™¨ç‚¹å‡»äº‹ä»¶ç»“æŸ -->
 
 	<script>
 		//var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.894, 116.3155], 13);
 		var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.894, 116.3155/*42.800323, -1.636461*/], 13);
-		//´´½¨µØÍ¼ÈİÆ÷ÒÔ¼°¶¨Òå³õÊ¼µã
+		//åˆ›å»ºåœ°å›¾å®¹å™¨ä»¥åŠå®šä¹‰åˆå§‹ç‚¹
 	</script>
-	<script>//zc,Ìí¼Ó±ÈÀı³ß
+	<script>//zc,æ·»åŠ æ¯”ä¾‹å°º
 		var scaleControl = L.control.scale({  
   
                    position: 'bottomleft'  
@@ -137,7 +137,7 @@
 	<script src="ways.js"></script>
 	<script src="landcover.js"></script>	
 	<script src="railway.js"></script>	
-	<!-- ÑùÊ½±íµÄÌí¼Ó -->
+	<!-- æ ·å¼è¡¨çš„æ·»åŠ  -->
 	<script>
 		var shopIcon =new L.Icon(
 		{
@@ -151,7 +151,7 @@
 			iconSize:     [16, 16], 
 			iconAnchor:   [8, 8]
 		});
-		//Ìí¼ÓÊÒÄÚÍ¼±êÀàĞÍ
+		//æ·»åŠ å®¤å†…å›¾æ ‡ç±»å‹
 		function styleSheet() {
 			this.color			=undefined;
 			this.fillColor		=undefined;
@@ -163,7 +163,7 @@
 			this.opacity		=1;
 			this.fillOpacity	=0;
 		}
-		//ÑùÊ½±íÔ­ĞÍ
+		//æ ·å¼è¡¨åŸå‹
 		function mystyle(feature){
 			if(map.getZoom()>18){
 				if(feature.properties.room==='building')
@@ -183,7 +183,7 @@
 					return {color: "#ff0000",weight: 1,fill:true,fillColor:'#ffff88',fillOpacity:1};
 				}
 			}
-			//ÊÒÄÚÑùÊ½µÄ¶¨Òå
+			//å®¤å†…æ ·å¼çš„å®šä¹‰
 			else{
 				var zoom = map.getZoom();
 				var style=new styleSheet();
@@ -197,7 +197,7 @@
 				}
 				return style;
 			}
-			//½«ÑùÊ½±íÔ­ĞÍÓëËõ·ÅµÈ¼¶´«Èë¸³Öµº¯Êı
+			//å°†æ ·å¼è¡¨åŸå‹ä¸ç¼©æ”¾ç­‰çº§ä¼ å…¥èµ‹å€¼å‡½æ•°
 		};
 		
 		//zc
@@ -205,27 +205,27 @@
 			{
 				var zoom = map.getZoom();
 			
-					//zc,Ìí¼ÓÂ·¿öÑùÊ½------------
+					//zc,æ·»åŠ è·¯å†µæ ·å¼------------
 				if(roadCondition_flag == 1 && feature.properties.highway != undefined && feature.properties.highway != null) {
-			 		//¸ù¾İµÀÂ·äÖÈ¾¹æÔò"stylesheets/ways.js" ³õÊ¼»¯µÀÂ·¶ÔÏó
+			 		//æ ¹æ®é“è·¯æ¸²æŸ“è§„åˆ™"stylesheets/ways.js" åˆå§‹åŒ–é“è·¯å¯¹è±¡
 					
 					if(feature.properties.average_speed<10)
 					{
-						return {color:'#EE0000',weight:6,fill:false,fillOpacity:0.2};//ÏßÌõÑÕÉ« Óµ¶Â
+						return {color:'#EE0000',weight:6,fill:false,fillOpacity:0.2};//çº¿æ¡é¢œè‰² æ‹¥å µ
 					}
 					if(feature.properties.average_speed>=10 && feature.properties.average_speed<20)
 					{
-							//return {color:'#EEAD0E',weight:6,fill:false};//ÏßÌõÑÕÉ« »ºĞĞ
+							//return {color:'#EEAD0E',weight:6,fill:false};//çº¿æ¡é¢œè‰² ç¼“è¡Œ
 							return {color:'#FFCC00',weight:6,fill:false,fillOpacity:0.5};
 					}
 					if(feature.properties.average_speed>=20)
 					{
-						//return {color:'#7FFF00',weight:6,fill:false};//ÏßÌõÑÕÉ« Ë³³©
+						//return {color:'#7FFF00',weight:6,fill:false};//çº¿æ¡é¢œè‰² é¡ºç•…
 						return {color:'#66FF00',weight:6,fill:false,fillOpacity:0.6};
 					}
 					if(feature.properties.average_speed==null || feature.properties.average_speed==undefined)
 					{
-						return {color:'#DCDCDC',weight:6,fill:false,fillOpacity:0.7};//ÏßÌõÑÕÉ« Ë³³©#DCDCDC
+						return {color:'#DCDCDC',weight:6,fill:false,fillOpacity:0.7};//çº¿æ¡é¢œè‰² é¡ºç•…#DCDCDC
 					}
 			 		
 				};//if type==way end
@@ -237,7 +237,7 @@
 		var iconcount=0;
 		var labelArray=[];
 		var labelcount=0;
-		//±ê¼ÇÍ¼±êºÍÎÄ×Ö±êÇ©¶ÔÏóÒÔ±ã´¦Àí
+		//æ ‡è®°å›¾æ ‡å’Œæ–‡å­—æ ‡ç­¾å¯¹è±¡ä»¥ä¾¿å¤„ç†
 		function myoneach(feature,layer){
 			if(map.getZoom()<feature.properties.minzoom)
 			{
@@ -261,7 +261,7 @@
 				label.setLatLng(layer.getBounds().getCenter());
 				map.showLabel(label);	
 			}
-			//ÎªÊÒÄÚ¶ÔÏó°ó¶¨Í¼±ê
+			//ä¸ºå®¤å†…å¯¹è±¡ç»‘å®šå›¾æ ‡
 			else if(map.getZoom()>=15){
 				if(feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
 				{
@@ -281,7 +281,7 @@
 					map.showLabel(label);			 
 				}
 			}
-			//ÔÚËõ·Å15¼¶ÒÔÉÏÌí¼ÓÎÄ×Ö±êÇ©
+			//åœ¨ç¼©æ”¾15çº§ä»¥ä¸Šæ·»åŠ æ–‡å­—æ ‡ç­¾
 		};
 		function myLowfilter(feature,layer){
 			if(map.getZoom()<feature.properties.minzoom)
@@ -331,7 +331,7 @@
 				}
 			}
 		};
-		/*zc,RoadconditionfilterÂ·¿ö¹ıÂËÆ÷-----------------*/
+		/*zc,Roadconditionfilterè·¯å†µè¿‡æ»¤å™¨-----------------*/
 		function myRoadConditionfilter(feature,layer)
 		{
 			if(map.getZoom() < feature.properties.minzoom ||roadCondition_flag==0) 
@@ -354,17 +354,17 @@
 		};
 		/*--------------------*/
 		
-		//¹ıÂËµô½¨ÖşºÍµãÊı¾İ,½øĞĞ»ù±¾µÄÊı¾İ·Ö²ã
-		//zc,ĞÂµÄgeosever·ÃÎÊµØÖ·
+		//è¿‡æ»¤æ‰å»ºç­‘å’Œç‚¹æ•°æ®,è¿›è¡ŒåŸºæœ¬çš„æ•°æ®åˆ†å±‚
+		//zc,æ–°çš„geoseverè®¿é—®åœ°å€
 		//var GeoJSONURL = 'http://166.111.68.197:11193/geoserver/v/{z}/{x}/{y}';
 		//var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver';
-		//1.15£¬ĞÂµÄµØÖ··ÃÎÊ·½Ê½
-		var URL = window.location.href;
-    var url1 = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
-    var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
-    var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
+		//1.15ï¼Œæ–°çš„åœ°å€è®¿é—®æ–¹å¼
     //var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/';
 		//var GeoJSONURL = url1 + 'v/{z}/{x}/{y}';
+		var URL = window.location.href;
+    var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
+    URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
+    var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
 		
 		var GeoJSONLowLayer = new L.TileLayer.GeoJSON(GeoJSONURL,{maxZoom:19,minZoom:13},
 		{
@@ -383,7 +383,7 @@
 		
 		//zc----------------------------
 		//var GeoJSONRCURL = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/t/15/26969/12418/2010/03/12/160';
-		//×îºóÒ»Î»ÊÇÊ±¶Î£¬·¶Î§´Ó1µ½288
+		//æœ€åä¸€ä½æ˜¯æ—¶æ®µï¼ŒèŒƒå›´ä»1åˆ°288
 		//var GeoJSONRCURL = url1+'t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
 		var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
 		var GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
@@ -396,14 +396,14 @@
 		//------------------------------
 		console.log(GeoJSONHighLayer._container);
 		console.log(GeoJSONLowLayer._container);
-		//´´½¨Ê¸Á¿Êı¾İ²ã²¢½«Æä×°ÈëµØÍ¼ÈİÆ÷
+		//åˆ›å»ºçŸ¢é‡æ•°æ®å±‚å¹¶å°†å…¶è£…å…¥åœ°å›¾å®¹å™¨
 		GeoJSONHighLayer.setZIndex(4);
 		GeoJSONLowLayer.setZIndex(3);
 		//zc------------------------------------
 		GeoJSONRoadConditionLayer.setZIndex(2);
 		
 		
-		//Éè¶¨ËùÔÚdiv²ãµÄÏÔÊ¾²ã¼¶
+		//è®¾å®šæ‰€åœ¨divå±‚çš„æ˜¾ç¤ºå±‚çº§
 		
 		GeoJSONLowLayer.on('load',function() {
 			console.log("all low visible tiles have been loaded");
@@ -413,22 +413,22 @@
 		GeoJSONHighLayer.on('load',function() {
 			console.log("all high visible tiles have been loaded");
 			if(map.getZoom()>18){console.log("indoor time");}
-			//zc,×¢ÊÍ
+			//zc,æ³¨é‡Š
 			//obdata.update();
 		});
 		
-		/*zc,Â·¿öÏÔÊ¾²ã¼¶--------------*/
+		/*zc,è·¯å†µæ˜¾ç¤ºå±‚çº§--------------*/
 		
 		GeoJSONRoadConditionLayer.on('load',function() {
 			obdata.update();
 		});
 		
 		/*----------------------------*/
-		//¶¨ÒåÍßÆ¬²ã¼ÓÔØÍê³ÉºóÔÙ¼ÓÔØ½¨Öş
-		//leaflet-src.jsÔÚ2460,2489,2566ĞĞ´¦ÓĞĞŞ¸Ä
-		//obdata¶¨ÒåÓÚOSMBuildings-Leaflet.debug.js  2386ĞĞ		
+		//å®šä¹‰ç“¦ç‰‡å±‚åŠ è½½å®Œæˆåå†åŠ è½½å»ºç­‘
+		//leaflet-src.jsåœ¨2460,2489,2566è¡Œå¤„æœ‰ä¿®æ”¹
+		//obdataå®šä¹‰äºOSMBuildings-Leaflet.debug.js  2386è¡Œ		
 		var osmb = new OSMBuildings(map).load(GeoJSONURL,'');
-		//¼ÓÔØ½¨ÖşÊı¾İ²ã,OSMBuildings-Leaflet.debug.js ÔÚ532,585,1025,2139ĞĞ´¦ÓĞĞŞ¸Ä
+		//åŠ è½½å»ºç­‘æ•°æ®å±‚,OSMBuildings-Leaflet.debug.js åœ¨532,585,1025,2139è¡Œå¤„æœ‰ä¿®æ”¹
 	</script>
 </body>
 </html>
