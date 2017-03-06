@@ -19,6 +19,8 @@
 </head>
 <body>
 		<!-- zc,添加路况按钮 -->
+		<!-- 3.6,2010.4.16数据有问题-->
+		
 	
 <div>
 		<select name="select year" id="select year">
@@ -26,11 +28,33 @@
 	  </select>
 	  
 	  <select name="select month" id="select month">
-     <option value="03">03</option>
+     <option value="04">04</option>
     </select>
     
     <select name="select day" id="select day">
-     <option value="12">12</option>
+    	<option value="07">07</option>
+    	<option value="08">08</option>
+    	<option value="09">09</option>
+    	<option value="10">10</option>
+    	<option value="11">11</option>
+     	<option value="12">12</option>
+     	<option value="13">13</option>
+     	<option value="14">14</option>
+     	<option value="15">15</option>
+     	<option value="16">16</option>
+     	<option value="17">17</option>
+    	<option value="18">18</option>
+    	<option value="19">19</option>
+    	<option value="20">20</option>
+    	<option value="21">21</option>
+     	<option value="22">22</option>
+     	<option value="23">23</option>
+     	<option value="24">24</option>
+     	<option value="25">25</option>
+     	<option value="26">26</option>
+     	<option value="27">27</option>
+     	<option value="28">28</option>
+     	<option value="29">29</option>
     </select>
     
 		<select name="select hour" id="select hour">
@@ -82,27 +106,32 @@
 	<!-- zc,注册事件函数,浏览器点击事件 -->
 	<script>
 		var roadCondition_flag=0;//路况触发信号
-		//var countFlag=0;
-		var roadConditionTime = 1; //路况时间参数
+		var roadConditionTime = 0; //路况时间参数
 		
   	document.getElementById('road map').onclick = function(){
     	//road_flag = 1;
     	roadCondition_flag = 1;
-//    	if(countFlag == 0) changeCenter = 1;
-//    	countFlag++;
     	var selectHour = document.getElementById("select hour");
     	var hourValue = selectHour.value;
     	var selectMinute = document.getElementById("select minute");
     	var minuteValue = selectMinute.value;
     	var tempCondition = roadConditionTime;
-    	roadConditionTime = parseInt(hourValue)*4 + parseInt(minuteValue) + 1;
+    	//roadConditionTime = parseInt(hourValue)*4 + parseInt(minuteValue) + 1;
+    	roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
     	if(roadConditionTime != tempCondition)
     		{
 //   			changeCenter = 1;
 //    			roadConditionStorageFlag = 0;
 					map.removeLayer(GeoJSONRoadConditionLayer);
       	}
-    GeoJSONRCURL = url1+'t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;//'/15/26969/12418'
+      else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
+  			{
+  				return;
+  			}
+    //GeoJSONRCURL = url1+'t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;//'/15/26969/12418'
+    var selectDay = (document.getElementById("select day")).value;
+    var selectMonth = (document.getElementById("select month")).value;
+    GeoJSONRCURL = URLRef+'geoserver/t/{z}/{x}/{y}' + '/2010/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;//'/15/26969/12418'
 		GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
   		{
   			style:myroadconditionstyle,
@@ -113,6 +142,7 @@
   	}
   	document.getElementById('road map close').onclick = function(){
   		roadCondition_flag = 0;
+  		roadConditionTime = 0;
   		map.removeLayer(GeoJSONRoadConditionLayer);
   	}
 	</script>
@@ -412,10 +442,12 @@
 		//1.15，新的地址访问方式
 		var URL = window.location.href;
     var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
+    //在zchang路径下，需要多一层
     URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
-    var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
-    //var url1 = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/';
-		//var GeoJSONURL = url1 + 'v/{z}/{x}/{y}';
+    //var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
+    //绝对路径访问方式
+    //var URLRef = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/';
+		var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
 		
 		var GeoJSONLowLayer = new L.TileLayer.GeoJSON(GeoJSONURL,{maxZoom:19,minZoom:13},
 		{
@@ -435,8 +467,10 @@
 		//zc----------------------------
 		//var GeoJSONRCURL = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/t/15/26969/12418/2010/03/12/160';
 		//最后一位是时段，范围从1到288
-		//var GeoJSONRCURL = url1+'t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
-		var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
+		//var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
+		var selectDay = (document.getElementById("select day")).value;
+    var selectMonth = (document.getElementById("select month")).value;
+		var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/04/'+ selectDay +'/' + roadConditionTime;
 		var GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
   		{
   			style:myroadconditionstyle,
