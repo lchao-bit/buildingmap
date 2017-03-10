@@ -239,16 +239,16 @@
 				if(roadCondition_flag == 1 && feature.properties.highway != undefined && feature.properties.highway != null) {
 			 		//根据道路渲染规则"stylesheets/ways.js" 初始化道路对象
 					
-					if(feature.properties.average_speed<10)
+					if(feature.properties.average_speed<(20/3.6))//10
 					{
 						return {color:'#EE0000',weight:6,fill:false,fillOpacity:0.2};//线条颜色 拥堵
 					}
-					if(feature.properties.average_speed>=10 && feature.properties.average_speed<20)
+					if(feature.properties.average_speed>=(20/3.6) && feature.properties.average_speed<(40/3.6))//10  20
 					{
 							//return {color:'#EEAD0E',weight:6,fill:false};//线条颜色 缓行
 							return {color:'#FFCC00',weight:6,fill:false,fillOpacity:0.5};
 					}
-					if(feature.properties.average_speed>=20)
+					if(feature.properties.average_speed>=(40/3.6))
 					{
 						//return {color:'#7FFF00',weight:6,fill:false};//线条颜色 顺畅
 						return {color:'#66FF00',weight:6,fill:false,fillOpacity:0.6};
