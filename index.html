@@ -5,7 +5,13 @@
     <meta charset="utf-8" />  <!-- zc,使用中文 -->
     <title>Leaflet test</title>
 	<style>
-		#map { height: 800px; }
+		/*#map { height: 800px; }*/
+	</style>
+	<style type="text/css">
+	/*css控制地图大小自动充满整个窗口*/
+	html{height:100%}
+	body{height:95%}
+	#map{height:98%}
 	</style>
 	<link rel="stylesheet" href="leaflet.css" />
 	<link rel="stylesheet" href="leaflet.label.css" />
@@ -116,19 +122,15 @@
     	var selectMinute = document.getElementById("select minute");
     	var minuteValue = selectMinute.value;
     	var tempCondition = roadConditionTime;
-    	//roadConditionTime = parseInt(hourValue)*4 + parseInt(minuteValue) + 1;
     	roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
     	if(roadConditionTime != tempCondition)
     		{
-//   			changeCenter = 1;
-//    			roadConditionStorageFlag = 0;
 					map.removeLayer(GeoJSONRoadConditionLayer);
       	}
       else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
   			{
   				return;
   			}
-    //GeoJSONRCURL = url1+'t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;//'/15/26969/12418'
     var selectDay = (document.getElementById("select day")).value;
     var selectMonth = (document.getElementById("select month")).value;
     GeoJSONRCURL = URLRef+'geoserver/t/{z}/{x}/{y}' + '/2010/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;//'/15/26969/12418'
@@ -149,17 +151,14 @@
 	<!-- zc,浏览器点击事件结束 -->
 
 	<script>
-		//var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.894, 116.3155], 13);
 		var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.894, 116.3155/*42.800323, -1.636461*/], 13);
+		
 		//创建地图容器以及定义初始点
 	</script>
 	<script>//zc,添加比例尺
 		var scaleControl = L.control.scale({  
-  
                    position: 'bottomleft'  
-  
          });  
-  
          map.addControl(scaleControl);  
 		</script>
 
@@ -245,13 +244,11 @@
 					}
 					if(feature.properties.average_speed>=(20/3.6) && feature.properties.average_speed<(40/3.6))//10  20
 					{
-							//return {color:'#EEAD0E',weight:6,fill:false};//线条颜色 缓行
-							return {color:'#FFCC00',weight:6,fill:false,fillOpacity:0.5};
+							return {color:'#FFCC00',weight:6,fill:false,fillOpacity:0.5};//线条颜色 缓行
 					}
 					if(feature.properties.average_speed>=(40/3.6))
 					{
-						//return {color:'#7FFF00',weight:6,fill:false};//线条颜色 顺畅
-						return {color:'#66FF00',weight:6,fill:false,fillOpacity:0.6};
+						return {color:'#66FF00',weight:6,fill:false,fillOpacity:0.6};//线条颜色 顺畅
 					}
 					if(feature.properties.average_speed==null || feature.properties.average_speed==undefined)
 					{
@@ -295,6 +292,116 @@
 				map.showLabel(label);	
 			}
 			//为室内对象绑定图标
+			else if(map.getZoom()===13){
+						if(((feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
+						&&(feature.properties.highway==='primary'||feature.properties.highway==='motorway'))){
+					var label = new L.Label();
+					for(x in labelArray)
+					{
+						if(feature.properties.name ===labelArray[x]._content)
+						{
+							return;
+						}
+					}
+					labelArray[labelcount]=label;
+					labelcount++;
+					label.setContent(feature.properties.name);
+					//label.setLatLng(layer.getBounds().getCenter());
+					//map.showLabel(label);			
+					
+					//道路方向
+						var i=0,j=0;
+						var tlat=0,tlng=0;
+					 	
+					 	i = layer._latlngs[layer._latlngs.length-1].lat -layer._latlngs[0].lat;
+					 	j = layer._latlngs[layer._latlngs.length-1].lng -layer._latlngs[0].lng;
+					 	
+					 	if(i > j)
+					 	{
+					 			tlat=12;
+					 	}
+					 	else
+					 		{
+					 				tlng=12;
+					 		}
+					//zc,单字符显示道路名字
+					var str = feature.properties.name;
+					var couts = layer._latlngs.length;
+					
+					for(var i=0;i < str.length;i++)
+					{
+						var tmplabel = new L.Label();
+						singlelabelArray[singlelabelcount]=tmplabel;
+						singlelabelcount++;
+						tmplabel.setContent(str.substr(i,1));
+						//var t = Math.round(couts/2) + i;
+						
+					 	//var t=map.project(layer._latlngs[0]);
+					  var t=map.project(layer.getBounds().getCenter());
+					 	t.x=t.x+tlat*(i-1);
+					 	t.y=t.y+tlng*(i-1);
+					 	var t1=map.unproject(t);
+						tmplabel.setLatLng(t1);
+						map.showLabel(tmplabel);	
+					}
+				}
+			}
+			else if(map.getZoom()===14){
+						if(((feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
+						&&(feature.properties.highway==='primary'||feature.properties.highway==='secondary'||feature.properties.highway==='trunk'))){
+					var label = new L.Label();
+					for(x in labelArray)
+					{
+						if(feature.properties.name ===labelArray[x]._content)
+						{
+							return;
+						}
+					}
+					labelArray[labelcount]=label;
+					labelcount++;
+					label.setContent(feature.properties.name);
+					//label.setLatLng(layer.getBounds().getCenter());
+					//map.showLabel(label);			
+					
+					//道路方向
+						var i=0,j=0;
+						var tlat=0,tlng=0;
+					 	
+					 	i = layer._latlngs[layer._latlngs.length-1].lat -layer._latlngs[0].lat;
+					 	j = layer._latlngs[layer._latlngs.length-1].lng -layer._latlngs[0].lng;
+					 	
+					 	if(i > j)
+					 	{
+					 			tlat=12;
+					 	}
+					 	else
+					 		{
+					 				tlng=12;
+					 		}
+					//zc,单字符显示道路名字
+					var str = feature.properties.name;
+					var couts = layer._latlngs.length;
+					
+					for(var i=0;i < str.length;i++)
+					{
+						var tmplabel = new L.Label();
+						singlelabelArray[singlelabelcount]=tmplabel;
+						singlelabelcount++;
+						tmplabel.setContent(str.substr(i,1));
+						//var t = Math.round(couts/2) + i;
+						
+					 	//var t=map.project(layer._latlngs[0]);
+					  var t=map.project(layer.getBounds().getCenter());
+					 	t.x=t.x+tlat*(i-1);
+					 	t.y=t.y+tlng*(i-1);
+					 	var t1=map.unproject(t);
+						tmplabel.setLatLng(t1);
+						map.showLabel(tmplabel);	
+					}
+				}
+			}
+						
+						
 			else if(map.getZoom()>=15){
 				if(feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
 				{
