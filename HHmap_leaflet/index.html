@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">  <!-- zc,声 明 网页语言 --> 
+<head>
+    <meta charset="utf-8" />  <!-- zc,使用中文 -->
+    <title>Leaflet wms</title>
+	<style>
+		/*#map { height: 800px; }*/
+	</style>
+	<style type="text/css">
+	/*css控制地图大小自动充满整个窗口*/
+	html{height:100%}
+	body{height:95%}
+	#map{height:98%}
+	</style>
+	<link rel="stylesheet" href="leaflet.css" />
+	<script src="leaflet-src.js"></script>
+	<!--<script src="leaflet.js"></script>
+	<script src="OSMBuildings-Leaflet.debug.js"></script>-->
+	
+	<!-- 库文件的添加 -->
+</head>
+<body>
+	<div id="map">
+	</div>	
+	<script>
+		var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.894, 116.3155], 13);
+		
+		//创建地图容器以及定义初始点
+	</script>
+	<script>//zc,添加比例尺
+		var scaleControl = L.control.scale({  
+                   position: 'bottomleft'  
+         });  
+         map.addControl(scaleControl);  
+	</script>
+	<script>
+		var URL = window.location.href;
+    var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
+    //在zchang路径下，需要多一层
+    URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
+    //在HHmap路径下，需要再多一层
+     URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
+    //绝对路径访问方式
+    //var URLRef = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/';
+    //var URLRef = 'http://os.cs.tsinghua.edu.cn/';
+    var URLRef = 'http://127.0.0.1:8080/';
+    		
+		var wmsLayer = L.tileLayer.wms(URLRef+"geoserver/osm_ubuntu/wms?",{
+		layers:'osm_ubuntu:osm_beijing',
+		version:'1.1.0'}).addTo(map);
+
+	 
+	</script>
+
+</body>
+</html>
