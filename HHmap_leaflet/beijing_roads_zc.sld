@@ -117,6 +117,56 @@
         </TextSymbolizer>
    			</Rule>
    			
+   			<Rule><!-- highway-primary-->
+          <Name>highway-primary</Name>
+	          <ogc:Filter>
+			       <ogc:PropertyIsEqualTo>
+			        <ogc:PropertyName>highway</ogc:PropertyName>
+			         <ogc:Literal>primary</ogc:Literal>
+						 </ogc:PropertyIsEqualTo>
+	          </ogc:Filter> 
+          <LineSymbolizer>
+           <Stroke>
+          	<CssParameter name="stroke">#FF0000</CssParameter>
+           	<CssParameter name="stroke-width">5</CssParameter>
+           </Stroke>
+          </LineSymbolizer>
+          
+          <TextSymbolizer>
+          <Label>
+            <ogc:PropertyName>name</ogc:PropertyName>
+          </Label>
+
+          <Font>
+            <CssParameter name="font-family">Microsoft YaHei</CssParameter>
+            <CssParameter name="font-style">Normal</CssParameter>
+            <CssParameter name="font-size">14</CssParameter>
+            <CssParameter name="font-weight">bold</CssParameter>
+          </Font>
+          
+          <LabelPlacement>
+            <LinePlacement>
+            </LinePlacement>
+          </LabelPlacement>
+          <Halo>
+            <Radius>
+              <ogc:Literal>2</ogc:Literal>
+            </Radius>
+            <Fill>
+              <CssParameter name="fill">#FFFFFF</CssParameter>
+              <CssParameter name="fill-opacity">0.85</CssParameter>        
+            </Fill>
+          </Halo>
+          
+          <Fill>
+            <CssParameter name="fill">#000000</CssParameter>
+          </Fill>
+          
+          <VendorOption name="group">true</VendorOption>
+          
+        </TextSymbolizer>
+   			</Rule>
+   			
    			<Rule>  <!-- little road -->
           <MaxScaleDenominator>52000</MaxScaleDenominator>
           <MinScaleDenominator>35000</MinScaleDenominator>
