@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="GB2312" />
+	<title>HHmap</title>
+	<link rel='stylesheet' href='style.css' />
+	<style type="text/css">
+		html{height:100%}
+		body{height:95%}
+		#map_element{height:98%}
+		ul, li {
+            padding-left: 0px;
+            margin-left: 0px;
+            list-style: none;
+        }
+
+        #info table td {
+            border:1px solid #ddd;
+            border-collapse: collapse;
+            margin: 0;
+            padding: 0;
+            font-size: 90%;
+            padding: .2em .1em;
+            background:#fff;
+	}
+	#info table th{
+	    padding:.2em .2em;
+            text-transform: uppercase;
+            font-weight: bold;
+            background: #eee;
+	}
+	tr.odd td {
+            background:#eee;
+	}
+	table.featureInfo caption {
+            text-align:left;
+            font-size:100%;
+            font-weight:bold;
+            padding:.2em .2em;
+	}
+	</style>
+	<script type="text/javascript" src="OpenLayers.js"></script>
+	<script type="text/javascript">
+
+		var map, infocontrols;
+		
+		var style = {
+			fillColor: '#000',
+			fillOpacity: 0.1,
+			strokeWidth: 0
+		};
+
+		function init() {
+
+			var controls_array = [
+				new OpenLayers.Control.Navigation({}),
+				new OpenLayers.Control.PanZoomBar({}),
+				new OpenLayers.Control.LayerSwitcher({}),
+				new OpenLayers.Control.Permalink(),
+				new OpenLayers.Control.MousePosition({}),
+				new OpenLayers.Control.ScaleLine(),
+				new OpenLayers.Control.OverviewMap(),
+			];
+
+			var bounds = new OpenLayers.Bounds(
+                115.432318, 39.429787,
+                117.533264, 41.059143
+            );
+
+			var options = {
+            	controls: controls_array,
+                maxExtent: bounds,
+                maxResolution: 0.0082068203125,
+
+            };
+
+			map = new OpenLayers.Map('map_element', options);
+			
+			var vector = new OpenLayers.Layer.Vector('vector');
+			var urlwms='http://127.0.0.1:8080/geoserver/osm_ubuntu/wms'
+			var wms = new OpenLayers.Layer.WMS(
+				'Beijing Road',
+				urlwms,
+				{	//Params, server side settings
+					layers: 'osm_ubuntu:osm_beijing',
+				},
+				{	//Options, client side settings
+					buffer: 0,
+          displayOutsideMaxExtent: true,
+          isBaseLayer: true,	//set as base layer
+          yx : {'EPSG:4326' : true},
+          version:'1.1.0',
+				},
+				{transistionEffect:'resize'}
+			);
+			
+			var wms_2 = new OpenLayers.Layer.WMS(
+				'动态路况信息',
+				urlwms,
+				{	//Params, server side settings
+					layers: 'osm_ubuntu:beijing_traffic',
+					transparent: true
+				},
+				{	//Options, client side settings
+					buffer: 0,
+          displayOutsideMaxExtent: true,
+          isBaseLayer: false,	//set as base layer
+					opacity: 1.0,
+          yx : {'EPSG:4326' : true},
+
+				},
+				{transistionEffect:'resize'}
+			);
+
+			var vectorLayer = new OpenLayers.Layer.Vector(
+				'Draw Test',
+				{
+					renderers: ['Canvas', 'SVG', 'VML']
+				}
+			);
+
+
+			
+			var layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
+
+        	map.addLayers([wms, wms_2, vectorLayer, vector, layer]);
+			
+			
+			
+			//---------------------------------------------------------------------
+				
+			//Style the Vector Layer
+			var vector_style = new OpenLayers.Style({
+				'fillColor': '#0066FF',
+				'fillOpacity': .8,
+				'strokeColor': '#00CCFF',
+				'strokeWidth': 5,
+				'pointRadius': 8
+			});
+			var vector_style_map = new OpenLayers.StyleMap({
+				'default': vector_style
+			});
+			vectorLayer.styleMap = vector_style_map;
+			
+			//Set the center and Zoom
+			map.setCenter(new OpenLayers.LonLat(116.32479,39.93994));
+			map.zoomTo(5);
+			
+			map.addControl(new OpenLayers.Control.EditingToolbar(vectorLayer));
+
+			infoControls = {
+				click: new OpenLayers.Control.WMSGetFeatureInfo({
+					url: urlwms, 
+					title: 'Conditions',
+					layers: [wms_2],
+					queryVisible: true
+				}),
+				hover: new OpenLayers.Control.WMSGetFeatureInfo({
+					url: urlwms, 
+					title: 'Conditions',
+					layers: [wms_2],
+					hover: true,
+					queryVisible: true
+				})
+			}
+			for (var i in infoControls) { 
+				infoControls[i].events.register("getfeatureinfo", this, showInfo);
+				map.addControl(infoControls[i]); 
+			}
+			
+			function showInfo(evt) {
+					$('nodelist').innerHTML = evt.responseText;
+			}
+				
+			infoControls.click.activate();
+			
+			//--------------------geolocate----------------------------------
+			var pulsate = function(feature) {
+				var point = feature.geometry.getCentroid(),
+					bounds = feature.geometry.getBounds(),
+					radius = Math.abs((bounds.right - bounds.left)/2),
+					count = 0,
+					grow = 'up';
+
+				var resize = function(){
+					if (count>16) {
+						clearInterval(window.resizeInterval);
+					}
+					var interval = radius * 0.03;
+					var ratio = interval/radius;
+					switch(count) {
+						case 4:
+						case 12:
+							grow = 'down'; break;
+						case 8:
+							grow = 'up'; break;
+					}
+					if (grow!=='up') {
+						ratio = - Math.abs(ratio);
+					}
+					feature.geometry.resize(1+ratio, point);
+					vector.drawFeature(feature);
+					count++;
+				};
+				window.resizeInterval = window.setInterval(resize, 50, point, radius);
+			};
+
+			var geolocate = new OpenLayers.Control.Geolocate({
+				bind: false,
+				geolocationOptions: {
+					enableHighAccuracy: false,
+					maximumAge: 0,
+					timeout: 7000
+				}
+			});
+			map.addControl(geolocate);
+			var firstGeolocation = true;
+			geolocate.events.register("locationupdated",geolocate,function(e) {
+				vector.removeAllFeatures();
+				var circle = new OpenLayers.Feature.Vector(
+					OpenLayers.Geometry.Polygon.createRegularPolygon(
+						new OpenLayers.Geometry.Point(e.point.x, e.point.y),
+						e.position.coords.accuracy/2,
+						40,
+						0
+					),
+					{},
+					style
+				);
+				vector.addFeatures([
+					new OpenLayers.Feature.Vector(
+						e.point,
+						{},
+						{
+							graphicName: 'cross',
+							strokeColor: '#f00',
+							strokeWidth: 2,
+							fillOpacity: 0,
+							pointRadius: 10
+						}
+					),
+					circle
+				]);
+				if (firstGeolocation) {
+					map.zoomToExtent(vector.getDataExtent());
+					pulsate(circle);
+					firstGeolocation = false;
+					this.bind = true;
+				}
+			});
+			geolocate.events.register("locationfailed",this,function() {
+				OpenLayers.Console.log('Location detection failed');
+			});
+
+			$('locate').onclick = function() {
+				vector.removeAllFeatures();
+				geolocate.deactivate();
+				$('track').checked = false;
+				geolocate.watch = false;
+				firstGeolocation = true;
+				geolocate.activate();
+			};
+			$('track').onclick = function() {
+				vector.removeAllFeatures();
+				geolocate.deactivate();
+				if (this.checked) {
+					geolocate.watch = true;
+					firstGeolocation = true;
+					geolocate.activate();
+				}
+			};
+			$('track').checked = false;
+		}
+	</script>
+</head>
+
+<body onload="init();">
+	<button id="locate">Locate me!</button>
+    <input type="checkbox" name="track" id="track">
+    <label for="track">Track my position</label>
+	<div id="map_element"></div>
+	<script src="geolocation.js"></script>
+</body>
+</html>

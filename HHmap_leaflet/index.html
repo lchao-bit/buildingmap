@@ -22,9 +22,11 @@
 </head>
 <body>
 	<div id="map">
+		<button id="road map">显示路况</button>
+		<button id="road map close">取消显示路况</button>
 	</div>	
 	<script>
-		var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.894, 116.3155], 13);
+		var map = L.map('map',{maxZoom:19,minZoom:13}).setView([39.93994,116.32479], 13);
 		
 		//创建地图容器以及定义初始点
 	</script>
@@ -49,8 +51,42 @@
 		var wmsLayer = L.tileLayer.wms(URLRef+"geoserver/osm_ubuntu/wms?",{
 		layers:'osm_ubuntu:osm_beijing',
 		version:'1.1.0'}).addTo(map);
-
-	 
+	</script>
+	<script>
+		var roadCondition_flag	
+  	document.getElementById('road map').onclick = function(){
+    	//road_flag = 1;
+    	roadCondition_flag = 1;
+    	var selectHour = document.getElementById("select hour");
+    	var hourValue = selectHour.value;
+    	var selectMinute = document.getElementById("select minute");
+    	var minuteValue = selectMinute.value;
+    	var tempCondition = roadConditionTime;
+    	roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
+    	if(roadConditionTime != tempCondition)
+    		{
+					map.removeLayer(GeoJSONRoadConditionLayer);
+      	}
+      else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
+  			{
+  				return;
+  			}
+    var selectDay = (document.getElementById("select day")).value;
+    var selectMonth = (document.getElementById("select month")).value;
+    GeoJSONRCURL = URLRef+'geoserver/t/{z}/{x}/{y}' + '/2010/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;//'/15/26969/12418'
+		GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
+  		{
+  			style:myroadconditionstyle,
+  			onEachFeature:myoneach,
+  			filter:myRoadConditionfilter
+  		}) 
+  		map.addLayer(GeoJSONRoadConditionLayer);
+  	}
+  	document.getElementById('road map close').onclick = function(){
+  		roadCondition_flag = 0;
+  		roadConditionTime = 0;
+  		map.removeLayer(GeoJSONRoadConditionLayer);
+  	}
 	</script>
 
 </body>
