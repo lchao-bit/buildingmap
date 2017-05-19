@@ -55,7 +55,6 @@
 			var controls_array = [
 				new OpenLayers.Control.Navigation({}),
 				new OpenLayers.Control.PanZoomBar({}),
-				new OpenLayers.Control.LayerSwitcher({}),
 				new OpenLayers.Control.Permalink(),
 				new OpenLayers.Control.MousePosition({}),
 				new OpenLayers.Control.ScaleLine(),
@@ -76,7 +75,6 @@
 
 			map = new OpenLayers.Map('map_element', options);
 			
-			var vector = new OpenLayers.Layer.Vector('vector');
 			var urlwms='http://127.0.0.1:8080/geoserver/osm_ubuntu/wms'
 			var wms = new OpenLayers.Layer.WMS(
 				'Beijing Road',
@@ -93,13 +91,60 @@
 				},
 				{transistionEffect:'resize'}
 			);
-			
 			var wms_2 = new OpenLayers.Layer.WMS(
 				'动态路况信息',
 				urlwms,
 				{	//Params, server side settings
 					layers: 'osm_ubuntu:beijing_traffic',
-					transparent: true
+					transparent: true,
+					viewparams:'seq:1;date:2010_04_07'
+				},
+				{	//Options, client side settings
+					buffer: 0,
+          displayOutsideMaxExtent: true,
+          isBaseLayer: false,	//set as base layer
+					opacity: 1.0,
+          yx : {'EPSG:4326' : true},
+				},
+				{transistionEffect:'resize'}
+			);
+			wms_2.setVisibility(false); //设置为不显示 
+
+      map.addLayers([wms,wms_2]);
+		//-----------------traffic-date-select---------------------------
+		var roadCondition_flag=0;//路况触发信号
+		var roadConditionTime = 0; //路况时间参数
+		var selectDay = 0;
+    var selectMonth = 0;
+		$('road map').onclick = function(){
+    	roadCondition_flag = 1;
+    	var selectHour = document.getElementById("select hour");
+    	var hourValue = selectHour.value;
+    	var selectMinute = document.getElementById("select minute");
+    	var minuteValue = selectMinute.value;
+    	var tempCondition = roadConditionTime;
+    	roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
+    	var tmpday = 	selectDay;
+    	var tmpmonth = selectMonth;
+    	selectDay = (document.getElementById("select day")).value;
+    	selectMonth = (document.getElementById("select month")).value;    	
+    	if(roadConditionTime != tempCondition||tmpday != selectDay||tmpmonth != selectMonth)
+    		{
+    			wms_2.setVisibility(false);
+					//map.removeLayer(wms_2);
+      	}
+      else if(roadConditionTime == tempCondition && tmpday == selectDay && tmpmonth == selectMonth && roadCondition_flag == 1)
+  			{
+  				return;
+  			}
+  		var curview = 'seq:'+roadConditionTime+';date:2010_'+selectMonth+'_'+selectDay;
+			 wms_2 = new OpenLayers.Layer.WMS(
+				'动态路况信息',
+				urlwms,
+				{	//Params, server side settings
+					layers: 'osm_ubuntu:beijing_traffic',
+					transparent: true,
+					viewparams:curview
 				},
 				{	//Options, client side settings
 					buffer: 0,
@@ -111,42 +156,26 @@
 				},
 				{transistionEffect:'resize'}
 			);
-
-			var vectorLayer = new OpenLayers.Layer.Vector(
-				'Draw Test',
-				{
-					renderers: ['Canvas', 'SVG', 'VML']
-				}
-			);
-
-
+			wms_2.setVisibility(true);
 			
-			var layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
-
-        	map.addLayers([wms, wms_2, vectorLayer, vector, layer]);
-			
+			map.removeLayer(map.layers[1]);
+  		map.addLayer(wms_2);
+  	}
+  	document.getElementById('road map close').onclick = function(){
+  		roadCondition_flag = 0;
+  		roadConditionTime = 0;
+  		selectDay = 0;
+      selectMonth = 0;
+  		wms_2.setVisibility(false);
+  	}
+	//---------------------------------------------------------------			
 			
 			
 			//---------------------------------------------------------------------
-				
-			//Style the Vector Layer
-			var vector_style = new OpenLayers.Style({
-				'fillColor': '#0066FF',
-				'fillOpacity': .8,
-				'strokeColor': '#00CCFF',
-				'strokeWidth': 5,
-				'pointRadius': 8
-			});
-			var vector_style_map = new OpenLayers.StyleMap({
-				'default': vector_style
-			});
-			vectorLayer.styleMap = vector_style_map;
 			
 			//Set the center and Zoom
 			map.setCenter(new OpenLayers.LonLat(116.32479,39.93994));
 			map.zoomTo(5);
-			
-			map.addControl(new OpenLayers.Control.EditingToolbar(vectorLayer));
 
 			infoControls = {
 				click: new OpenLayers.Control.WMSGetFeatureInfo({
@@ -278,6 +307,85 @@
 	<button id="locate">Locate me!</button>
     <input type="checkbox" name="track" id="track">
     <label for="track">Track my position</label>
+  <div>
+		<select name="select year" id="select year">
+	   <option value="2010">2010</option>
+	  </select>
+	  
+	  <select name="select month" id="select month">
+     <option value="04">04</option>
+    </select>
+    
+    <select name="select day" id="select day">
+    	<option value="07">07</option>
+    	<option value="08">08</option>
+    	<option value="09">09</option>
+    	<option value="10">10</option>
+    	<option value="11">11</option>
+     	<option value="12">12</option>
+     	<option value="13">13</option>
+     	<option value="14">14</option>
+     	<option value="15">15</option>
+     	<option value="16">16</option>
+     	<option value="17">17</option>
+    	<option value="18">18</option>
+    	<option value="19">19</option>
+    	<option value="20">20</option>
+    	<option value="21">21</option>
+     	<option value="22">22</option>
+     	<option value="23">23</option>
+     	<option value="24">24</option>
+     	<option value="25">25</option>
+     	<option value="26">26</option>
+     	<option value="27">27</option>
+     	<option value="28">28</option>
+     	<option value="29">29</option>
+    </select>
+    
+		<select name="select hour" id="select hour">
+	 	 <option value="0">0点</option>
+		  <option value="1">1点</option>
+		  <option value="2">2点</option>
+		  <option value="3">3点</option>
+		  <option value="4">4点</option>
+		  <option value="5">5点</option>
+		  <option value="6">6点</option>
+		  <option value="7">7点</option>
+		  <option value="8">8点</option>
+		  <option value="9">9点</option>
+		  <option value="10">10点</option>
+		  <option value="11">11点</option>
+		  <option value="12">12点</option>
+		  <option value="13">13点</option>
+		  <option value="14">14点</option>
+		  <option value="15">15点</option>
+		  <option value="16">16点</option>
+		  <option value="17">17点</option>
+		  <option value="18">18点</option>
+		  <option value="19">19点</option>
+		  <option value="20">20点</option>
+		  <option value="21">21点</option>
+		  <option value="22">22点</option>
+		  <option value="23">23点</option>
+	  </select>
+		<select name="select minute" id="select minute">
+		   <option value="1">0-4分</option>
+		  <option value="2">5-9分</option>
+		  <option value="3">10-14分</option>
+		  <option value="4">15-19分</option>
+		  <option value="5">20-24分</option>
+		  <option value="6">24-29分</option>
+		  <option value="7">30-34分</option>
+		  <option value="8">35-39分</option>
+		  <option value="9">40-44分</option>
+		  <option value="10">45-49分</option>
+		  <option value="11">50-54分</option>
+		  <option value="12">55-59分</option>
+		</select>
+	<button id="road map">显示路况</button>
+	<button id="road map close">取消显示路况</button>
+	</div>
+	<!-- zc,添加路况结束 -->
 	<div id="map_element"></div>
 </body>
 </html>
