@@ -633,7 +633,7 @@
 		//var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
 		var selectDay = (document.getElementById("select day")).value;
     var selectMonth = (document.getElementById("select month")).value;
-		var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/04/'+ selectDay +'/' + roadConditionTime;
+		var GeoJSONRCURL = URLRef + 'geoserver/n/{z}/{x}/{y}' + '/' + selectYear + '/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;
 		var GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
   		{
   			style:myroadconditionstyle,
