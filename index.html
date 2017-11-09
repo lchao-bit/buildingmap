@@ -4,14 +4,17 @@
 <head>
     <meta charset="utf-8" />  <!-- zc,使用中文 -->
     <title>Leaflet test</title>
-	<style>
-		/*#map { height: 800px; }*/
-	</style>
+
 	<style type="text/css">
 	/*css控制地图大小自动充满整个窗口*/
 	html{height:100%}
 	body{height:95%}
-	#map{height:98%}
+	
+	#row1{float:left;display: inline ;}
+	body{background: #ecf0f1;color: #34495e;text-shadow: white 1px 1px 1px;}.value{text-align: middle;font-weight: bold;width: 60px;line-height: 60px;margin: -18px auto;letter-spacing: -0.07em;text-shadow: white 2px 2px 2px;}input[type="range"] {display: block;-webkit-appearance: none;background-color: #bdc3c7;width: 100%;height: 10px;border-radius: 5px;margin: 5px auto;outline: 0;}input[type="range"]::-webkit-slider-thumb {-webkit-appearance: none;background-color: #e74c3c;width: 30px;height: 30px;border-radius: 50%;border: 2px solid white;cursor: pointer;transition: 0.3s ease-in-out;}.range{position:relative;width:300px;margin:0 auto;}/*.rang_width{position:absolute;top:-15px;left:0;background:#f00;height:10px;border-radius:5px 0 0 5px;}*/
+	
+	#map{width: 100%;height:98%}
+	
 	</style>
 	<link rel="stylesheet" href="leaflet.css" />
 	<link rel="stylesheet" href="leaflet.label.css" />
@@ -26,10 +29,11 @@
 <body>
 		<!-- zc,添加路况按钮 -->
 		<!-- 3.6,2010.4.16数据有问题-->
-		
-	
-<div>
+<div id="body">		
+<div id="row1">
 		<select name="select year" id="select year">
+		 <!--<option value="2015">2015</option>
+		 <option value="2016">2016</option>-->
 	   <option value="2017">2017</option>
 	  </select>
 	  
@@ -39,87 +43,166 @@
     
     <select name="select day" id="select day">
     	<option value="01">01</option>
+    	<!--<option value="02">02</option>
+    	<option value="03">03</option>
+    	<option value="04">04</option>-->
        </select>
-    <select name="select hour" id="select hour">
-	 	 <option value="0">0点</option>
-		  <option value="1">1点</option>
-		  <option value="2">2点</option>
-		  <option value="3">3点</option>
-		  <option value="4">4点</option>
-		  <option value="5">5点</option>
-		  <option value="6">6点</option>
-		  <option value="7">7点</option>
-		  <option value="8">8点</option>
-		  <option value="9">9点</option>
-		  <option value="10">10点</option>
-		  <option value="11">11点</option>
-		  <option value="12">12点</option>
-		  <option value="13">13点</option>
-		  <option value="14">14点</option>
-		  <option value="15">15点</option>
-		  <option value="16">16点</option>
-		  <option value="17">17点</option>
-		  <option value="18">18点</option>
-		  <option value="19">19点</option>
-		  <option value="20">20点</option>
-		  <option value="21">21点</option>
-		  <option value="22">22点</option>
-		  <option value="23">23点</option>
-	  </select>
-		<select name="select minute" id="select minute">
-		   <option value="1">0-4分</option>
-		  <option value="2">5-9分</option>
-		  <option value="3">10-14分</option>
-		  <option value="4">15-19分</option>
-		  <option value="5">20-24分</option>
-		  <option value="6">24-29分</option>
-		  <option value="7">30-34分</option>
-		  <option value="8">35-39分</option>
-		  <option value="9">40-44分</option>
-		  <option value="10">45-49分</option>
-		  <option value="11">50-54分</option>
-		  <option value="12">55-59分</option>
-		</select>
-	<button id="road map">显示路况</button>
-	<button id="road map close">取消显示路况</button>
 	</div>
+	<div id="row1" class="value">0点</div> 
+	<div id="row1" class="range"><input type="range" min="0" max="23" step="1" value="0" oninput="change()">
+							  	<p class="rang_width"></p>
+	</div>
+	<div id="row1" class="value">00-04分</div> 
+	<div id="row1" class="range"><input type="range" min="1" max="12" step="1" value="1" oninput="change()">
+							  	<p class="rang_width"></p>
+	</div>
+	<div id="row1">
+		<button id="road map">显示路况</button>
+		<button id="road map close">取消显示路况</button></div>
+	</div>  
 	<!-- zc,添加路况结束 -->
-	<div id="map">
-	</div>	
+	<div id="map"></div>	
+</div>
+	
 	<!-- zc,注册事件函数,浏览器点击事件 -->
 	<script>
 		var roadCondition_flag=0;//路况触发信号
 		var roadConditionTime = 0; //路况时间参数
 		
-  	document.getElementById('road map').onclick = function(){
-    	//road_flag = 1;
-    	roadCondition_flag = 1;
-    	var selectHour = document.getElementById("select hour");
-    	var hourValue = selectHour.value;
-    	var selectMinute = document.getElementById("select minute");
-    	var minuteValue = selectMinute.value;
-    	var tempCondition = roadConditionTime;
-    	roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
-    	if(roadConditionTime != tempCondition)
-    		{
-					map.removeLayer(GeoJSONRoadConditionLayer);
-      	}
-      else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
-  			{
-  				return;
-  			}
-    var selectDay = (document.getElementById("select day")).value;
-    var selectMonth = (document.getElementById("select month")).value;
-    var selectYear = (document.getElementById("select year").value);
-    GeoJSONRCURL = URLRef+'geoserver/n/{z}/{x}/{y}' + '/' + selectYear + '/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;//'/15/26969/12418'
-		GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
-  		{
-  			style:myroadconditionstyle,
-  			onEachFeature:myoneach,
-  			filter:myRoadConditionfilter
-  		}) 
-  		map.addLayer(GeoJSONRoadConditionLayer);
-  	}
+		document.getElementById('road map').onclick = function(){
+			roadCondition_flag = 1;
+			change();
+			}
+		
+		//<!-- zc,滑动选择时间 -->			
+		var elem = document.querySelectorAll('input[type="range"]');
+		function change(){
+			if(roadCondition_flag == 1){
+				//滑动选择小时
+				var HrangeValue = function(){
+				var sHValue="0点";
+						switch(elem[0].value){
+							case "0":sHValue="0点";
+											break;
+							case "1":sHValue="1点";
+											break;
+							case "2":sHValue="2点";
+											break;
+							case "3":sHValue="3点";
+											break;
+							case "4":sHValue="4点";
+											break;
+							case "5":sHValue="5点";
+											break;
+							case "6":sHValue="6点";
+											break;				
+							case "7":sHValue="7点";
+											break;				
+							case "8":sHValue="8点";
+											break;
+							case "9":sHValue="9点";
+											break;
+							case "10":sHValue="10点";
+											break;	
+							case "11":sHValue="11点";
+											break;
+							case "12":sHValue="12点";
+											break;	
+							case "13":sHValue="13点";
+											break;
+							case "14":sHValue="14点";
+											break;
+							case "15":sHValue="15点";
+											break;
+							case "16":sHValue="16点";
+											break;				
+							case "17":sHValue="17点";
+											break;				
+							case "18":sHValue="18点";
+											break;
+							case "19":sHValue="19点";
+											break;
+							case "20":sHValue="20点";
+											break;
+							case "21":sHValue="21点";
+											break;
+							case "22":sHValue="22点";
+											break;
+							case "23":sHValue="23点";
+											break;	
+																										
+							}
+				  var newHValue = elem[0].value;
+				  var target = document.querySelectorAll('.value');
+				  target[0].innerHTML = sHValue;//newValue
+				  var max = elem.getAttribute("max");
+				  var width = (91.3 / max * newHValue) +"%";    //这里的91.3是用了整个滑块的宽度300减去拖动的那个圆形滑块的宽度30再加上圆形滑块的边框宽度4然后再除以300得来的，因为显示拖动距离的rang_width在绝对定位后在滑动过程中会遮挡住圆形滑块，导致圆形滑块无法被拖动，所以要适当的减少rang_width在滑动时的宽度，当然rang_width的宽度是根据你自己的实际需求来计算出来的，并不是一成不变的91.3%
+				  document.querySelector('.rang_width').style.width = width;};
+					elem[0].addEventListener("input", HrangeValue);
+				//滑动选择分
+				var MrangeValue = function(){
+				var sMValue="0-4分";
+						switch(elem[1].value){
+							case "1":sMValue="00-04分";
+											break;
+							case "2":sMValue="05-09分";
+											break;
+							case "3":sMValue="10-14分";
+											break;
+							case "4":sMValue="15-19分";
+											break;
+							case "5":sMValue="20-24分";
+											break;
+							case "6":sMValue="24-29分";
+											break;				
+							case "7":sMValue="30-34分";
+											break;				
+							case "8":sMValue="35-39分";
+											break;
+							case "9":sMValue="40-44分";
+											break;
+							case "10":sMValue="45-49分";
+											break;	
+							case "11":sMValue="50-54分";
+											break;
+							case "12":sMValue="55-59分";
+											break;																
+							}
+				  var newMValue = elem[1].value;
+				  var target = document.querySelectorAll('.value');
+				  target[1].innerHTML = sMValue;//newValue
+				  var max = elem.getAttribute("max");
+				  var width = (91.3 / max * newMValue) +"%";    //这里的91.3是用了整个滑块的宽度300减去拖动的那个圆形滑块的宽度30再加上圆形滑块的边框宽度4然后再除以300得来的，因为显示拖动距离的rang_width在绝对定位后在滑动过程中会遮挡住圆形滑块，导致圆形滑块无法被拖动，所以要适当的减少rang_width在滑动时的宽度，当然rang_width的宽度是根据你自己的实际需求来计算出来的，并不是一成不变的91.3%
+				  document.querySelector('.rang_width').style.width = width;};
+					elem[1].addEventListener("input", MrangeValue);
+					
+					
+		    	var hourValue = elem[0].value
+		    	var minuteValue = elem[1].value;
+		    	var tempCondition = roadConditionTime;
+		    	roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
+		    	if(roadConditionTime != tempCondition)
+		    		{
+							map.removeLayer(GeoJSONRoadConditionLayer);
+		      	}
+		      else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
+		  			{
+		  				return;
+		  			}
+		    var selectDay = (document.getElementById("select day")).value;
+		    var selectMonth = (document.getElementById("select month")).value;
+		    var selectYear = (document.getElementById("select year").value);
+		    GeoJSONRCURL = URLRef+'geoserver/n/{z}/{x}/{y}' + '/' + selectYear + '/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;//'/15/26969/12418'
+				GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
+		  		{
+		  			style:myroadconditionstyle,
+		  			onEachFeature:myoneach,
+		  			filter:myRoadConditionfilter
+		  		}) 
+		  		map.addLayer(GeoJSONRoadConditionLayer);
+			}
+		}
+		
   	document.getElementById('road map close').onclick = function(){
   		roadCondition_flag = 0;
   		roadConditionTime = 0;
@@ -545,7 +628,7 @@
 		map.addLayer(GeoJSONHighLayer);
 		
 		//zc----------------------------
-		//var GeoJSONRCURL = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/t/15/26969/12418/2010/03/12/160';
+		var GeoJSONRCURL = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/t/15/26969/12418/2010/03/12/160';
 		//最后一位是时段，范围从1到288
 		//var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
 		var selectDay = (document.getElementById("select day")).value;
