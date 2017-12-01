@@ -11,8 +11,7 @@
 	body{height:95%}
 	
 	#row1{float:left;display: inline ;}
-	body{background: #ecf0f1;color: #34495e;text-shadow: white 1px 1px 1px;}.value{text-align: middle;font-weight: bold;width: 210px;line-height: 60px;margin: -18px auto;letter-spacing: -0.07em;text-shadow: white 2px 2px 2px;}input[type="range"] {display: block;-webkit-appearance: none;background-color: #bdc3c7;width: 100%;height: 10px;border-radius: 5px;margin: 5px auto;outline: 0;}input[type="range"]::-webkit-slider-thumb {-webkit-appearance: none;background-color: #e74c3c;width: 30px;height: 30px;border-radius: 50%;border: 2px solid white;cursor: pointer;transition: 0.3s ease-in-out;}.range{position:relative;width:900px;margin:0 auto;} /*width:300px*/
-	
+	body{background: #ecf0f1;color: #34495e;text-shadow: white 1px 1px 1px;}.value{text-align: middle;font-weight: bold;width: 210px;line-height: 60px;margin: -18px auto;letter-spacing: -0.07em;text-shadow: white 2px 2px 2px;}input[type="range"] {display: block;-webkit-appearance: none;background-color: #bdc3c7;width: 100%;height: 10px;border-radius: 5px;margin: 5px auto;outline: 0;}input[type="range"]::-webkit-slider-thumb {-webkit-appearance: none;background-color: #e74c3c;width: 30px;height: 30px;border-radius: 50%;border: 2px solid white;cursor: pointer;transition: 0.3s ease-in-out;}.range{position:relative;width:60%;margin:0 auto;} /*width:900px*/
 	#map{width: 100%;height:98%}
 	
 	</style>
@@ -31,7 +30,7 @@
 		<!-- 3.6,2010.4.16数据有问题-->
 <div id="body">	
 	<div id="row1" class="value">2015年01月01日0点00-04分</div> 
-	<div id="row1" class="range"><input type="range" min="14200416" max="15147357" step="864" value="14200416" oninput="change()">
+	<div id="row1" class="range"><input type="range" min="14200416" max="15147357" step="stepchange()" value="14200416" oninput="change()">
 				<p class="rang_width"></p> <!--min=2015年1月1日0:0，单位分，max=2017年12月31日23:55，step为24小时=288*3-->
 	</div>
 	<div id="row1">
@@ -47,36 +46,47 @@
 		var roadCondition_flag=0;//路况触发信号
 		var roadConditionTime = 0; //路况时间参数
 		var cury=2015,curm='01',curd='01', hourValue=0 ,minuteValue=1;
-		
-		document.getElementById('road map').onclick = function(){
-			roadCondition_flag = 1;
-			if(roadCondition_flag == 1){
-				change();
-			}
-		}
-		
-		//<!-- zc,滑动选择时间 -->		
+		var ltime = 0;//上次选择的时间
 		var elem = document.querySelector('input[type="range"]');
 		var sDValue="2015年01月01日00点0-4分",tempCondition ;
 		var tmputc = 14200416;
-		var ltime = 0;//上次选择的时间
+		var e;
+		document.getElementById('road map').onclick = function(){
+			roadCondition_flag = 1;
+			elem.focus();
+			elem.value  = tmputc;
+			stepchange();
+			change();
+		}
+		
+		//<!-- zc,滑动选择时间 -->	
 		//控制时间轴时间间隔
-		document.onkeydown=function(e){ 
+		function stepchange(){
+			elem.focus();
 			 e=window.event||e;
+			 var timeStart,timeEnd,time;
 			if (e.keyCode==37 || e.keyCode==39)
 			{
 				elem.step = 3;//切换键盘左右键时，一格变为5分钟，一个时间片
-				//change();
 			}
 			else if (e.keyCode==38 || e.keyCode==40)
 				{
 					elem.step = 36;//切换键盘上下键时，一格变为1小时
-				}	
-		};
-		document.onmousedown=function(){
+				}
+			else if (e.buttons == 1)
+		{
 			elem.step = 864;//鼠标拖动时，一格变为1天
-			//change();
 		}	
+	}
+	document.onkeydown=function(){
+		e=window.event||e;
+		stepchange();
+	}
+	document.onmousedown=function(){
+		e=window.event||e;
+		stepchange();
+	}
+	
 		function change(){
 			if(roadCondition_flag == 1){
 					//滑动选择日期
@@ -85,17 +95,13 @@
 						var seqs = ["00-04","05-09","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59"];	
 						var ym = "年",mm = "月",dm = "日",hm = "点",seqm="分";
 						var DrangeValue = function(){
-							ltime = tmputc;
 							//选中的utc时间
 							tmputc = elem.value;
 							var tmpt = new Date();
 							tmpt.setTime(tmputc * 100000);
-							//tmpt.setTime(14962701*100000);
 							cury = tmpt.getFullYear();
 							curm = months[tmpt.getMonth()];
-							//curm = tmpt.getMonth()+1;
 							curd = days[tmpt.getDate()-1];
-							//curd = tmpt.getDate();
 							hourValue = tmpt.getHours();//
 							var tm,tseq;
 							tm = tmpt.getMinutes();  // 获取分钟数(0-59)
@@ -126,7 +132,6 @@
 								tseq=11;
 					
 		    			minuteValue = tseq+1;//记录时段
-							//tempCondition = sDValue;
 							sDValue = cury +ym + curm + mm + curd + dm + hourValue + hm + seqs[tseq] + seqm;
 							
 						
@@ -136,27 +141,21 @@
 				  var max = elem.getAttribute("max");
 				  var width = (91.3 / max * newDValue) +"%";    //这里的91.3是用了整个滑块的宽度300减去拖动的那个圆形滑块的宽度30再加上圆形滑块的边框宽度4然后再除以300得来的，因为显示拖动距离的rang_width在绝对定位后在滑动过程中会遮挡住圆形滑块，导致圆形滑块无法被拖动，所以要适当的减少rang_width在滑动时的宽度，当然rang_width的宽度是根据你自己的实际需求来计算出来的，并不是一成不变的91.3%
 				  document.querySelector('.rang_width').style.width = width;
-				
 				  };
 					elem.addEventListener("input", DrangeValue);
 		  
-		    	//var tempCondition = roadConditionTime;
-		    	//roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
-		    	//if(roadConditionTime != tempCondition)
-		    	//if(roadCondition_flag == 1)
-		    		map.removeLayer(GeoJSONRoadConditionLayer);
-		    	/*if(sDValue != tempCondition)
+		    var ltmpt = new Date();
+		    ltime = tmputc;
+		    tmputc = elem.value;
+		    if(ltime != tmputc)
 		    		{
 							map.removeLayer(GeoJSONRoadConditionLayer);
 		      	}
-		      else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
+		    else 
 		  			{
 		  				return;
-		  			}*/
-		  			
-		   	
-		    var ltmpt = new Date();
-				ltmpt.setTime(ltime * 100000);
+		  			}
+				ltmpt.setTime(tmputc * 100000);
 				var selectDay = days[ltmpt.getDate()-1];
 		    var selectMonth = months[ltmpt.getMonth()];
 		    var selectYear = ltmpt.getFullYear();
@@ -193,8 +192,6 @@
 		    			selectMinute = ltseq+1;//记录时段
 			   var lroadConditionTime = parseInt(selectHour)*12 + parseInt(selectMinute);
 		    GeoJSONRCURL = URLRef+'geoserver/n/{z}/{x}/{y}' + '/' + selectYear + '/' + selectMonth +'/' + selectDay +'/' + lroadConditionTime;//'/15/26969/12418'
-		    //test
-		    //GeoJSONRCURL = URLRef+'geoserver/n/{z}/{x}/{y}' + '/' + '2017' + '/' + '06' +'/' + '01' +'/' + '68';//'/15/26969/12418'
 				GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
 		  		{
 		  			style:myroadconditionstyle,
@@ -208,6 +205,8 @@
   	document.getElementById('road map close').onclick = function(){
   		roadCondition_flag = 0;
   		roadConditionTime = 0;
+  		ltime = 0;
+  		//tmputc = elem.value;
   		map.removeLayer(GeoJSONRoadConditionLayer);
   	}
 	</script>
@@ -611,7 +610,7 @@
     //在zchang路径下，需要多一层
     URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
     //绝对路径访问方式
-   // var URLRef = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/';
+   //var URLRef = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/';
 		var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
 		
 		var GeoJSONLowLayer = new L.TileLayer.GeoJSON(GeoJSONURL,{maxZoom:19,minZoom:13},
