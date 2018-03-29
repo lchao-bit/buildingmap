@@ -1,0 +1,26 @@
+~ begin bibliography { .bib-numeric; cite-style:"numeric:'[',']',', '" ; caption:"6" ; data-style:"numeric" ; data-style:'madoko-numeric';  }
+~ begin bibitem {id:"leaflet2018"; cite-authors:"2018a"; cite-authors-long:"2018a"; cite-label:"1"; caption:"an open-source JavaScript library for mobile-friendly interactive maps&nl;2018a, "; data-line:"reference.bib:1"; searchterm:"an%20opensource%20JavaScript%20library%20for%20mobilefriendly%20interactive%20maps%202018a%2C%20"; spellcheck:"false"; bibitem-label:"\[1\]"}
+\/&ldquo;An Open-Source JavaScript Library for Mobile-Friendly Interactive Maps.&rdquo; <http://leafletjs.com/>. 2018.
+~ end bibitem
+
+~ begin bibitem {id:"Ethereum2014Whitepaper"; cite-authors:"2014"; cite-authors-long:"2014"; cite-label:"2"; caption:"Ethereum:A Next-Generation Smart Contract and Decentralized Application Platform&nl;2014, "; data-line:"reference.bib:11"; searchterm:"Ethereum%3AA%20NextGeneration%20Smart%20Contract%20and%20Decentralized%20Application%20Platform%202014%2C%20"; spellcheck:"false"; bibitem-label:"\[2\]"}
+\/&ldquo;Ethereum:A Next-Generation Smart Contract and Decentralized Application Platform.&rdquo; <https://github.com/ethereum/wiki/wiki/White-Paper>. 2014.
+~ end bibitem
+
+~ begin bibitem {id:"CBD2017blockchain"; cite-authors:"2017"; cite-authors-long:"2017"; cite-label:"3"; caption:"区块链参考架构&nl;2017, "; data-line:"reference.bib:21"; searchterm:"%E5%8C%BA%E5%9D%97%E9%93%BE%E5%8F%82%E8%80%83%E6%9E%B6%E6%9E%84%202017%2C%20"; spellcheck:"false"; bibitem-label:"\[3\]"}
+\/区块链参考架构. 中国区块链技术和产业发展论坛. 2017.
+~ end bibitem
+
+~ begin bibitem {id:"GeoJSON"; cite-authors:"2018b"; cite-authors-long:"2018b"; cite-label:"4"; caption:"undefined&nl;2018b, "; data-line:"reference.bib:27"; searchterm:"undefined%202018b%2C%20"; spellcheck:"false"; bibitem-label:"\[4\]."}
+\/ <https://en.wikipedia.org/wiki/GeoJSON>. 2018.
+~ end bibitem
+
+~ begin bibitem {id:"OpenStreetMap"; cite-authors:"n.d."; cite-authors-long:"n.d."; cite-label:"5"; caption:"undefined&nl;n.d., "; data-line:"reference.bib:7"; searchterm:"undefined%20n.d.%2C%20"; spellcheck:"false"; bibitem-label:"\[5\]."}
+\/ <http://www.openstreetmap.org/>.
+~ end bibitem
+
+~ begin bibitem {id:"Geohash"; cite-authors:"n.d."; cite-authors-long:"n.d."; cite-label:"6"; caption:"undefined&nl;n.d., "; data-line:"reference.bib:17"; searchterm:"undefined%20n.d.%2C%20"; spellcheck:"false"; bibitem-label:"\[6\]."}
+\/ <https://en.wikipedia.org/wiki/Geohash>.
+~ end bibitem
+
+~ end bibliography

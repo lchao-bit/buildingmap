@@ -1,0 +1,71 @@
+{
+  "_preamble": "",
+  "_comments": "",
+  "leaflet2018": {
+    "id": "leaflet2018",
+    "type": "no-type",
+    "title": "an open-source JavaScript library for mobile-friendly interactive maps",
+    "issued": {
+      "date-parts": [
+        [
+          "2018"
+        ]
+      ]
+    },
+    "publisher": "<http://leafletjs.com/>",
+    "_line": "reference.bib:1"
+  },
+  "openstreetmap": {
+    "id": "OpenStreetMap",
+    "type": "no-type",
+    "publisher": "<http://www.openstreetmap.org/>",
+    "_line": "reference.bib:7"
+  },
+  "ethereum2014whitepaper": {
+    "id": "Ethereum2014Whitepaper",
+    "type": "no-type",
+    "title": "Ethereum:A Next-Generation Smart Contract and Decentralized Application Platform",
+    "issued": {
+      "date-parts": [
+        [
+          "2014"
+        ]
+      ]
+    },
+    "publisher": "<https://github.com/ethereum/wiki/wiki/White-Paper>",
+    "_line": "reference.bib:11"
+  },
+  "geohash": {
+    "id": "Geohash",
+    "type": "no-type",
+    "publisher": "<https://en.wikipedia.org/wiki/Geohash>",
+    "_line": "reference.bib:17"
+  },
+  "cbd2017blockchain": {
+    "id": "CBD2017blockchain",
+    "type": "report",
+    "title": "区块链参考架构",
+    "issued": {
+      "date-parts": [
+        [
+          "2017"
+        ]
+      ]
+    },
+    "publisher": "中国区块链技术和产业发展论坛",
+    "_line": "reference.bib:21"
+  },
+  "geojson": {
+    "id": "GeoJSON",
+    "type": "no-type",
+    "issued": {
+      "date-parts": [
+        [
+          "2018"
+        ]
+      ]
+    },
+    "publisher": "<https://en.wikipedia.org/wiki/GeoJSON>",
+    "_line": "reference.bib:27"
+  }
+}
