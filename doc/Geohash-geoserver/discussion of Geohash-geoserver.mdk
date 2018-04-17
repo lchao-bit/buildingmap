@@ -1,0 +1,39 @@
+Title         : leaflet-geoserver关于geohash的讨论
+Bibliography: reference.bib
+
+
+[TITLE]
+# geoserver方面
+&emsp;&emsp;geoserver可根据给定的geohash块和缩放等级提供对应geojson格式地图数据。  
+## 过程
+1. geohash解码。在leaflet端给定geohash值后，geoserver需将该值重新计算成代表区域的一对经纬度点，再切分对应的地图数据。
+2. 缩放等级。指定geohash编码长度和缩放等级之间的对应关系，方便数据切分。
+3. 分层数据压缩。以完整道路为删减对象，即在不同缩放等级中，一条路只有全显示和不显示两种情况。由于geoserver中每条地图数据都有minzoom属性，可根据此属性值进行筛选，从而减少数据传递。在对应层级上，分块数据包括minzoom<=缩放比例的数据。
+4. 经纬度编码。geoserver在保存地图数据前要把数据中所有经纬度点编码为geohash再进行保存。
+
+## 存在问题
+1. 位置偏差。维基百科中给出的数据为：
+![accuracy of geohash]
+
+[accuracy of geohash]: images/accuracy-of-geohash.png "accuracy of geohash" { width:auto; max-width:90% }
+&emsp;&emsp;不同编码长度下，geohash的位置偏差不同。因此，地图在放大缩小过程中存在数据显示位置不固定问题。  
+
+2. 数据分层粒度。数据只有统一显示和不显示两种情况，未对以osm_id为单位的一个条目内部数据做粒度筛选。
+
+# 区块链方面
+&emsp;&emsp;区块链作为分布式数据存储载体，是geoserver服务器的延伸应用，减少数据访问时对服务器的依赖，同时保证数据的安全性。
+## 过程
+1. 分层区块链。按照行政区划等地理划分方式建立层级区块链。
+2. 初始化。对层次区块链进行地图数据初始化，将区块链根据所在区域及层级计算对应长度的geohash值，通过geohash值向geoserver中查询对应地图数据，并存储在区块链中。
+
+## 存在问题
+1. 数据冗余。根据区域和层级进行geohash划分时，可能存在一个区域包含在多个geohash块情况，此时需要把所有覆盖geohash块中的地图数据都存储进来，存在大量数据冗余。
+
+# leaflet方面
+&emsp;&emsp;leaflet计算geohash块并向geoserver请求对应地图数据，显示地图数据。
+## 过程
+1. 设定初始化地图显示中心位置和缩放等级。
+2. 根据屏幕大小、中心点位置和缩放等级计算待显示区域的geohash值组，以区块链为数据源查询geohash对应的地图数据块，然后显示geojson格式地图数据。
+
+## 存在问题
+1. 坐标转换。leaflet在展示地图元素时，所有元素都是以经纬度转换的屏幕坐标。如果地图数据的所有元素都用geohash来表示，在显示时仍需要将geohash转为经纬度，再将经纬度转为屏幕坐标两步进行。
