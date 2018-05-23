@@ -5,25 +5,33 @@ var Base32 = "0123456789bcdefghjkmnpqrstuvwxyz".split("");
 
 //read map in json format
 var fs=require('fs');
-var map_file="./wx4er1_data1.json";
+var map_file="./wx4er1_data2.json";
 var maps = fs.readFileSync(map_file);
 var lineReader = require('./line-reader');
 var counter = 0;
-lineReader.eachLine(map_file, function(line, last, cb) {
-  	read_lonlat(line);
-  	cb();
-	//console.log(++counter);
-});
-
 //设定geohashjson格式
 var totals,curcrs,geohashs=[];
 var geohashjson = {crs:{},features:[],totalFeatures:totals,type:"FeatureCollection"};
+console.log("maps:"+maps.length);
+//判断读数是否为空
+if(maps.length==0){
+	totals=0;
+	var jsonstr = JSON.stringify(geohashjson);
+	fs.writeFile('./geohashjson_file2',jsonstr,{flag:'a',encoding:'utf-8',mode:'0666'},function(err){});
+	}
+	else{
+	lineReader.eachLine(map_file, function(line, last, cb) {
+	  	read_lonlat(line);
+	  	cb();
+		//console.log(++counter);
+	});
+}
 
 function read_lonlat(line){
 	var road_json=JSON.parse(line);
 	geohashjson.crs = road_json.crs;
 	var path_string = road_json.features;//.geometry.coordinates.substring(1,road_json.path.length-1);
-	console.log(path_string.length);
+	//console.log(path_string.length);
 	for(var i=0; i<path_string.length; i++){
 		geohashs=[];
 		//console.log(path_string[i].geometry.coordinates);
@@ -32,14 +40,14 @@ function read_lonlat(line){
 			var point  = coordinates[j];
 			//console.log(j,point);
 			//增加多维数组判断
-			console.log(point[0].constructor);
+			//console.log(point[0].constructor);
 			var tp = [];
 			if(point[0].constructor == Array){
 				//console.log(point);
 				//console.log(point[0][0]+","+point[0][1]);
 				for(var k = 0; k < point.length;k++){
 					var tmp = point[k];
-					console.log(j,k,tmp);
+					//console.log(j,k,tmp);
 					tp.push(inputs(14,tmp[0],tmp[1]));
 					//console.log(tp);		
 				}
@@ -66,7 +74,7 @@ function read_lonlat(line){
 	geohashjson.totalFeatures = road_json.totalFeatures;
 	//console.log(geohashjson);
 	var jsonstr = JSON.stringify(geohashjson);
-	fs.writeFile('./geohashjson_file',jsonstr,{flag:'a',encoding:'utf-8',mode:'0666'});
+	fs.writeFile('./geohashjson_file2',jsonstr,{flag:'a',encoding:'utf-8',mode:'0666'},function(err){});
 }
 
 function inputs(input_p,longitude, latitude){
