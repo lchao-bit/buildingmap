@@ -18,11 +18,12 @@
 ## 比对过程
 ### 以新加坡的一条街道为例，（testroad2）中心点为（1.2683744,103.8242823）(所有对比在墨卡托投影上进行)
 
-1. 经纬度转换为geohash的脚本为：geohash&latlng_accuracy_test/geohash2latlng_test/change_latlng.js  
-    1. 测试数据为：singapore_point_latlng_2  
+1. 经纬度转换为geohash的脚本为：
+[change_latlng.js](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/geohash2latlng_test/change_latlng.js)  
+    1. 测试数据为：[singapore_point_latlng_2](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/geohash2latlng_test/singapore_point_latlng_2)  
     2. 转换结果为：  
-    geohash_file_singapore_14  
-    geohash_file_singapore_7  
+    [geohash_file_singapore_14](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/geohash2latlng_test/geohash_file_singapore_14)  
+    [geohash_file_singapore_7](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/geohash2latlng_test/geohash_file_singapore_7)  
     3. 结果说明：   
 在geohash编码长度为14位时，经纬度精度为小数点后7为；
 在geohash编码长度为7时，经纬度精度为小数点后3位；
@@ -144,7 +145,8 @@ L.Transformation
 在墨卡托投影中，原始Transformation为(0.5 / Math.PI, 0.5, -0.5 / Math.PI, 0.5)，scale为256*Math.pow(2, zoom)
 在
 1. geohash编码长度为6，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26617,103.82629）  
-s_1_ed_6_5
+s_1_ed_6_5  
+[代码位置](https://github.com/lchao-bit/buildingmap/tree/master/contast_of_geohash%26lonlat/singapore_road_2)
 
 point_array:  
 
@@ -193,9 +195,9 @@ E:EPSG4326
 s_2_org_5：原始latlng保留小数点后5位  
 s_2_ed_6_5：6位geohash解码后的latlng保留小数点后5位  
 代码为：  
-Spherical Mercator project/index-1_road-latlng_ed5.html  
-Spherical Mercator project/index-1_road-latlng-org5.html  
-EPSG4326 project/index-1_road-latlng_ed_E_5.html
+[index-1_road-latlng-org5.html](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/Spherical%20Mercator%20project/index-1_road-latlng-org5.html)  
+[index-1_road-latlng_ed5.html](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/Spherical%20Mercator%20project/index-1_road-latlng_ed5.html)  
+[index-1_road-latlng_ed_E_5.html](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/singapore_road_2/EPSG4326%20project/index-1_road-latlng_ed_E_5.html)
 
 point_array:
 
@@ -243,7 +245,7 @@ s_2geohash解码后数据+geohash长度10+经纬度保留小数点后5位+zoom=15+墨卡托
 s_2geohash解码后数据+geohash长度10+经纬度保留小数点后5位+zoom=15+EPSG4326  
 ![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_ed_10_5_E_15.png) 
 
-4.  geohash编码长度为14，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441） 
+4.  geohash编码长度为14，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441）   
 **表格说明**   
 M:墨卡托  
 E:EPSG4326  
@@ -299,10 +301,10 @@ s_2geohash解码后数据+geohash长度14+经纬度保留小数点后7位+zoom=19+EPSG4326
 ### 以北京的一个geohash块地图为例，中心点为（39.967620, 116.334145）zoom=15
 1. 以原始EPSG4326显示时，屏幕坐标x值正确，而y值都偏大，显示为y轴方向压缩  
 **代码位置：**  
-contast_of_geohash&lonlat->
-index-org.html
-index-new.html  
-**测试数据：：**  wx4er5
+contast_of_geohash&lonlat->  
+[index-org.html]()  
+[index-new.html]()  
+**测试数据：**  [wx4er5]()  
 **对比图：**  
 bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+墨卡托  
 ![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/bj_1_org.png)  
