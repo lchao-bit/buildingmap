@@ -203,7 +203,7 @@ zoom|s_2_org_5 M| s_2_ed_6_5 M|s_2_ed_6_5 E
 ---|----|---|---
 6|M676 297L675 297|M676 297L675 297|M676 297L675 297
 
-2.  geohash编码长度为8，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441） 
+2.  geohash编码长度为8，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441）   
 **表格说明**   
 M:墨卡托  
 E:EPSG4326  
@@ -220,7 +220,7 @@ zoom|s_2_org_5 M| s_2_ed_8_5 M|s_2_ed_8_5 E
 10|M433 294L418 297L421 292L409 295L413 298|M==432 292==L==417 295==L==420 290==L==408 293==L==412 296==|M433 294L418 297L421 292L409 295L413 ==299==
 11|M448 290L417 297L425 286L400 292L409 299|M==446 287==L==415 294==L==423 283==L==398 289==L==407 296==|M448 ==291==L417 297L425 286L400 292L409 299
 
-3.  geohash编码长度为10，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441） 
+3.  geohash编码长度为10，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441）   
 **表格说明**   
 M:墨卡托  
 E:EPSG4326  
@@ -236,10 +236,12 @@ zoom|s_2_org_5 M| s_2_ed_10_5 M|s_2_ed_10_5 E
 14|M666 247L418 297L477 213L283 257L350 316|M==643 221==L==395 271==L==454 187==L==259 231==L==327 290==|M666 247L418 297L477 213L==282== 257L350 316
 15|M913 197L417 297L537 129L147 217L282 334|M==867 145==L==371 245==L==491 77==L==101 165==L==236 282==|M913 197L417 297L537 129L147 217L282 ==333==
 结果图：  
-doc/contrst_of_geohash&latlng/result_iamge/  
-s_2_org_5_M_15.png  
-s_2_ed_10_5_M_15.png  
-s_2_ed_10_5_E_15.png
+s_2原始数据+经纬度保留小数点后5位+zoom=15+墨卡托  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_org_5_M_15.png)  
+s_2geohash解码后数据+geohash长度10+经纬度保留小数点后5位+zoom=15+墨卡托  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_ed_10_5_M_15.png)  
+s_2geohash解码后数据+geohash长度10+经纬度保留小数点后5位+zoom=15+EPSG4326  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_ed_10_5_E_15.png) 
 
 4.  geohash编码长度为14，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441） 
 **表格说明**   
@@ -283,7 +285,15 @@ zoom |s_2_ed_10_5 M	|s_2_ed_10_5 E
 - 由于zoom范围使得屏幕中只能显示部分点，且中心点未显示在屏幕上；  
 -  从s_2_org_7 M和 s_2_ed_14_7的对比结果来看，两个latlng值完全相同，而显示结果差别很大  
 
+s_2原始数据+经纬度保留小数点后7位+zoom=19+墨卡托  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_org_7_M_19.png)  
+s_2geohash解码后数据+geohash长度14+经纬度保留小数点后7位+zoom=19+墨卡托   
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_ed_14_7_M_19.png)  
+s_2geohash解码后数据+geohash长度14+经纬度保留小数点后7位+zoom=19+EPSG4326  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_ed_14_7_E_19.png)
+
 **结论：** 该组实验结果随机性强，不具备可比性。
+
 
 ## 验证测试2
 ### 以北京的一个geohash块地图为例，中心点为（39.967620, 116.334145）zoom=15
@@ -292,19 +302,22 @@ zoom |s_2_ed_10_5 M	|s_2_ed_10_5 E
 contast_of_geohash&lonlat->
 index-org.html
 index-new.html  
+**测试数据：：**  wx4er5
 **对比图：**  
-对比图->
-bj_1_org.png  
-bj_1_E.png
+bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+墨卡托  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/bj_1_org.png)  
+bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+EPSG4326+原始参数  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/bj_1_E.png)
 
 1. 修改Transformation(1 / 360, 0.5, -1 / 276, 0.5)，显示基本一致  
 **对比图：**  
-对比图->  
-bj_1_E_change.png  
-**数据对比：**  
-org_bj  new_bj  
-数据对比结果图：  
-new_bj_vs_org_bj.png
+bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+EPSG4326+修改参数  
+![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/bj_1_E_change.png)   
+**数据对比：**   
+[bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+墨卡托](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/org_bj)   
+[bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+EPSG4326+修改参数](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/new_bj)    
+数据对比结果图：   
+ ![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/new_bj_vs_org_bj.png)
 
 3. 将该结果转到新加坡数据中，存在较大误差，应该根据lat经度值范围选择不同的参数。  
 
