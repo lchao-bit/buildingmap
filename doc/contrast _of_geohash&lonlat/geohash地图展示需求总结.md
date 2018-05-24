@@ -39,7 +39,8 @@
 1. 对应关系：
     1. geohash编码长度为10，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26838,103.82428）
 
-TopLeftPointPoint：
+TopLeftPointPoint：  
+
   zoom|latlng_org | round_latlng
 ---|----|---
 10 |206000, 129851| 206000, 129851
@@ -53,6 +54,7 @@ TopLeftPointPoint：
 
 
 point_array:
+
  zoom|latlng_org | round_latlng
 ---|----|---
 10 |M690 294L675 297L678 292L666 295L670 298| M690 294L675 297L678 292L666 295L670 298
@@ -81,6 +83,7 @@ TopLeftPointPoint：
 10|206257, 129851|206257, 129851
 
 point_array:
+
  zoom|latlng_org | round_latlng
 ---|----|---
 16|M1029 173.12084592145015L417 297L656 -40L-123 136L146 370 |M1029 173.61290322580646L417 297L657 -39L-127 137L145 369
@@ -108,6 +111,7 @@ TopLeftPointPoint：
 6|12500, 7837|12500, 7837
 
 point_array:
+
 zoom|latlng_org | round_latlng
 ---|----|---
 11|M448 290L417 297L425 286L400 292L409 299|M450 289L418 297L418 281L402 289L402 297
@@ -142,7 +146,8 @@ L.Transformation
 1. geohash编码长度为6，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26617,103.82629）  
 s_1_ed_6_5
 
-point_array:
+point_array:  
+
 zoom|latlng_org | round_latlng|修正（0.61，0，-1,0）
 ---|----|---|---
 6|M418 297L417 297|M419 297L417 297|M418 297L417 297
@@ -150,7 +155,8 @@ zoom|latlng_org | round_latlng|修正（0.61，0，-1,0）
 2.  geohash编码长度为8，解码后经纬度精度为小数点后5位，中心点为latlng_org（1.26837,103.82428），round_latlng（1.26832,103.82441）  
 s_1_ed_8_5
 
-point_array:
+point_array:  
+
 zoom|lonlat_org | round_lonlat|修正
 ---|----|---|---
 7|M419 296L416 296L417 297|M420 296L416 296L417 297|M419 296L416 296L417 297
@@ -165,6 +171,7 @@ zoom|lonlat_org | round_lonlat|修正
  s_1_ed_10_5  
 
 point_array:
+
 zoom|lonlat_org | round_lonlat|修正(1 / 360, 0.5, -1 / 360, 0.5)+256*Math.pow(2, zoom)
 ---|----|---|---
 12 |M479 285L417 297L432 276L383 287L400 302|M504 279L417 297L438 267L370 283L393 303|M479 284L417 297L432 276L383 287L400 301
@@ -191,6 +198,7 @@ Spherical Mercator project/index-1_road-latlng-org5.html
 EPSG4326 project/index-1_road-latlng_ed_E_5.html
 
 point_array:
+
 zoom|s_2_org_5 M| s_2_ed_6_5 M|s_2_ed_6_5 E 
 ---|----|---|---
 6|M676 297L675 297|M676 297L675 297|M676 297L675 297
@@ -203,6 +211,7 @@ s_2_org_5：原始latlng保留小数点后5位
 s_2_ed_8_5：8位geohash解码后的latlng保留小数点后5位  
 
 point_array:
+
 zoom|s_2_org_5 M| s_2_ed_8_5 M|s_2_ed_8_5 E 
 ---|----|---|---
 7|M677 296L674 296L675 297|M677 296L674 296L675 297|M677 296L674 296L675 297
@@ -219,6 +228,7 @@ s_2_org_5：原始latlng保留小数点后5位
 s_2_ed_10_5：10位geohash解码后的latlng保留小数点后5位  
 
 point_array:
+
 zoom|s_2_org_5 M| s_2_ed_10_5 M|s_2_ed_10_5 E 
 ---|----|---|---
 12|M479 285L417 297L432 276L383 287L400 302|M==474 278==L==412 290==L==427 269==L==378 280==L==395 295==|M479 ==284==L417 297L432 276L383 287L400 ==301==
@@ -239,6 +249,7 @@ s_2_org_7：原始latlng保留小数点后7位
 s_2_ed_14_7：10位geohash解码后的latlng保留小数点后7位  
 
 point_array:
+
 zoom|s_2_org_7 M| s_2_ed_14_7 M|s_2_ed_14_7 E 
 ---|----|---|---
 16|M1286 173.32326283987913L675 297L914 -40L135 136L404 370|M1286 ==172.9385699899295==L675 ==296==L914 -40L135 136L==405== 370|M1286 ==173.9385699899295==L675 297L914 ==-39==L135 ==137==L==405== 371
@@ -284,7 +295,7 @@ index-new.html
 **对比图：**  
 对比图->
 bj_1_org.png  
-bj_1_org.png
+bj_1_E.png
 
 1. 修改Transformation(1 / 360, 0.5, -1 / 276, 0.5)，显示基本一致  
 **对比图：**  

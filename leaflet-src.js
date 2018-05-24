@@ -2062,6 +2062,7 @@ L.Map = L.Class.extend({
 		this._initialCenter = center;
 
 		this._initialTopLeftPoint = this._getNewTopLeftPoint(center);
+		console.log("TopLeftPoint"+this._initialTopLeftPoint);
 
 		if (!preserveMapOffset) {
 			L.DomUtil.setPosition(this._mapPane, new L.Point(0, 0));
@@ -5551,6 +5552,7 @@ L.Polyline = L.Path.extend({
 			}
 			str += (j ? 'L' : 'M') + p.x + ' ' + p.y;
 		}
+		//console.log(str);
 		return str;
 	},
 
