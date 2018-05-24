@@ -237,7 +237,8 @@ zoom|s_2_org_5 M| s_2_ed_10_5 M|s_2_ed_10_5 E
 13|M541 272L417 297L447 255L350 277L383 306|M==530 260==L==406 285==L==436 243==L==339 265==L==372 294==|M541 272L417 297L447 255L350 277L383 306
 14|M666 247L418 297L477 213L283 257L350 316|M==643 221==L==395 271==L==454 187==L==259 231==L==327 290==|M666 247L418 297L477 213L==282== 257L350 316
 15|M913 197L417 297L537 129L147 217L282 334|M==867 145==L==371 245==L==491 77==L==101 165==L==236 282==|M913 197L417 297L537 129L147 217L282 ==333==
-结果图：  
+
+**结果图：**  
 s_2原始数据+经纬度保留小数点后5位+zoom=15+墨卡托  
 ![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/s_2/s_2_org_5_M_15.png)  
 s_2geohash解码后数据+geohash长度10+经纬度保留小数点后5位+zoom=15+墨卡托  
@@ -300,11 +301,10 @@ s_2geohash解码后数据+geohash长度14+经纬度保留小数点后7位+zoom=19+EPSG4326
 ## 验证测试2
 ### 以北京的一个geohash块地图为例，中心点为（39.967620, 116.334145）zoom=15
 1. 以原始EPSG4326显示时，屏幕坐标x值正确，而y值都偏大，显示为y轴方向压缩  
-**代码位置：**  
-contast_of_geohash&lonlat->  
-[index-org.html]()  
-[index-new.html]()  
-**测试数据：**  [wx4er5]()  
+**代码位置：**    
+[index-org.html](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/bj_map/index-org.html)  
+[index-new.html](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/bj_map/index-new.html)  
+**测试数据：**  [wx4er5](https://github.com/lchao-bit/buildingmap/blob/master/contast_of_geohash%26lonlat/bj_map/map_file/wx4er5)  
 **对比图：**  
 bj_wx4er5原始数据+经纬度保留小数点后7位+zoom=15+墨卡托  
 ![image](https://github.com/lchao-bit/buildingmap/blob/master/doc/contrast%20_of_geohash%26lonlat/result_image/bj_E3857vsE4326/bj_1_org.png)  
