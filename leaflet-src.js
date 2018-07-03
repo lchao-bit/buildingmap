@@ -2733,6 +2733,7 @@ L.TileLayer = L.Class.extend({
 
 				if (this._tileShouldBeLoaded(point)) {
 					queue.push(point);
+					console.log(point.x+" "+point.y);
 				}
 			}
 		}
