@@ -709,7 +709,7 @@
 		
 		//设定所在div层的显示层级
 		
-		/*GeohashlowLayer.on('load',function() {
+		GeohashlowLayer.on('load',function() {
 			console.log("all low visible tiles have been loaded");
 			if(map.getZoom()>18){console.log("indoor time");}
 			obdata.update();
@@ -719,7 +719,7 @@
 			if(map.getZoom()>18){console.log("indoor time");}
 			//zc,注释
 			obdata.update();
-		});*/
+		});
 		
 		/*zc,路况显示层级--------------*/
 		
@@ -732,6 +732,8 @@
 		//leaflet-src.js在2460,2489,2566行处有修改
 		//obdata定义于OSMBuildings-Leaflet.debug.js  2386行		
 		//var osmb = new OSMBuildings(map).load(GeoJSONURL,'');
+		//var osmb = new OSMBuildings(map).load(GeohashURL,'');
+		
 		//加载建筑数据层,OSMBuildings-Leaflet.debug.js 在532,585,1025,2139行处有修改
 	</script>
 </body>

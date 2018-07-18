@@ -9586,12 +9586,14 @@ L.Map.include({
 		}
 		case zoom==13:
 		{
-			wlen = 0.04;
+			//wlen = 0.04;
+			wlen = 0.017;
 			break;
 		}
 		case zoom==14:
 		{
-			wlen = 0.02;
+			//wlen = 0.02;
+			wlen = 0.015;
 			break;
 		}
 		case zoom==15:
@@ -9602,6 +9604,7 @@ L.Map.include({
 		case zoom==16:
 		{
 			wlen = 0.005;
+			wlen = 0.001;
 			break;
 		}
 		case zoom==17:
@@ -9621,27 +9624,83 @@ L.Map.include({
 		}
 	
 	}
-
-		//zc,get areas which has intersection with the road. for lon, 0.01 degree is equal to about 1000m and 1113m for lat
-		/*for(var x = latlng1.lat; x < max_x + 0.01 && x > min_x - 0.01; x+=0.01 * step_x){
-			for(var y = latlng1.lng; y < max_y + 0.01 && y > min_y - 0.01; y+=0.01 * step_y){*/
-		for(var x = latlng1.lat; x < max_x + wlen && x > min_x - wlen; x+=wlen * step_x){
-			for(var y = latlng1.lng; y < max_y + wlen && y > min_y - wlen; y+=wlen * step_y){
-				geohash = encode_geohash(y, x,zoom);
-				neighbours = getNeighbour(geohash).concat(geohash);
+		//根据经纬度范围划分网格，暂定划分20个网格，即每个层级都是加载20个geohash块
+		
+		var range_x = Math.abs((max_x - min_x)/4);
+		var range_y = Math.abs((max_y - min_y)/4);
+		var step_x = latlng1.lat > latlng2.lat ? -range_x:range_x;
+		var step_y = latlng1.lng > latlng2.lng ? -range_y:range_y;
+		var center_x,center_y;
+		var center_q = [];
+		    //center = bounds.getCenter(),
+		//算出所有经纬度网格左上和右下点，中心点
+		for(var x = min_x- wlen; x < max_x + wlen ;){
+			for(var y = min_y - wlen; y < max_y + wlen;){
+		/*for(var x = min_x-range_x; x < max_x+range_x;){
+			for(var y = min_y-range_y; y < max_y+range_y;){*/
+				center_x = (x*2 + range_x)/2;
+				center_y = (y*2 + range_y)/2;
+				geohash = encode_geohash(center_y, center_x,zoom);
+				//geohash = encode_geohash(y, x,zoom);
 				if(((geohash in this._tiles)==false)&&(queue.indexOf(geohash) == -1))
 				{
 					queue.push(geohash);
 				}
-				/*for(var i=0; i<neighbours.length; i++){
+				/*neighbours = getNeighbour(geohash).concat(geohash);
+				for(var i=0; i<neighbours.length; i++){
 					//duplicate geohash
 						if((queue.indexOf(neighbours[i]) != -1)||(neighbours[i] in this._tiles)){
 							continue;
 						}
 						queue.push(neighbours[i]);
 				}*/
+				y += wlen*range_y;
 			}
+			x += wlen*range_x;
 		}
+		
+		/*for(var x = min_x; x < max_x + wlen && x > min_x - wlen; x+=step_x){
+			for(var y = min_y; y < max_y + wlen && y > min_y - wlen; y+=step_y){
+			
+				geohash = encode_geohash(y, x,zoom);
+				neighbours = getNeighbour(geohash).concat(geohash);
+				if(((geohash in this._tiles)==false)&&(queue.indexOf(geohash) == -1))
+				{
+					queue.push(geohash);
+				}
+				for(var i=0; i<neighbours.length; i++){
+					//duplicate geohash
+						if((queue.indexOf(neighbours[i]) != -1)||(neighbours[i] in this._tiles)){
+							continue;
+						}
+						queue.push(neighbours[i]);
+				}
+			}
+		}*/
+		
+		
+		
+		//zc,get areas which has intersection with the road. for lon, 0.01 degree is equal to about 1000m and 1113m for lat
+		/*for(var x = latlng1.lat; x < max_x + 0.01 && x > min_x - 0.01; x+=0.01 * step_x){
+			for(var y = latlng1.lng; y < max_y + 0.01 && y > min_y - 0.01; y+=0.01 * step_y){*/
+		/*for(var x = latlng1.lat; x < max_x + wlen && x > min_x - wlen; x+=wlen * step_x){
+			for(var y = latlng1.lng; y < max_y + wlen && y > min_y - wlen; y+=wlen * step_y){
+			
+				geohash = encode_geohash(y, x,zoom);
+				neighbours = getNeighbour(geohash).concat(geohash);
+				if(((geohash in this._tiles)==false)&&(queue.indexOf(geohash) == -1))
+				{
+					queue.push(geohash);
+				}
+				for(var i=0; i<neighbours.length; i++){
+					//duplicate geohash
+						if((queue.indexOf(neighbours[i]) != -1)||(neighbours[i] in this._tiles)){
+							continue;
+						}
+						queue.push(neighbours[i]);
+				}
+			}
+		}*/
 		
 
 		var tilesToLoad = queue.length;
@@ -9926,5 +9985,118 @@ L.Map.include({
 L.geohashLayer = function (url, options) {
 	return new L.GeohashLayer(url, options);
 };
+
+/*
+	Zoom animation logic for L.GeohashLayer.
+*/
+
+L.GeohashLayer.include({
+	_animateZoom: function (e) {
+		if (!this._animating) {
+			this._animating = true;
+			this._prepareBgBuffer();
+		}
+
+		var bg = this._bgBuffer,
+		    transform = L.DomUtil.TRANSFORM,
+		    initialTransform = e.delta ? L.DomUtil.getTranslateString(e.delta) : bg.style[transform],
+		    scaleStr = L.DomUtil.getScaleString(e.scale, e.origin);
+
+		bg.style[transform] = e.backwards ?
+				scaleStr + ' ' + initialTransform :
+				initialTransform + ' ' + scaleStr;
+	},
+
+	_endZoomAnim: function () {
+		var front = this._tileContainer,
+		    bg = this._bgBuffer;
+
+		front.style.visibility = '';
+		front.parentNode.appendChild(front); // Bring to fore
+
+		// force reflow
+		L.Util.falseFn(bg.offsetWidth);
+
+		var zoom = this._map.getZoom();
+		if (zoom > this.options.maxZoom || zoom < this.options.minZoom) {
+			this._clearBgBuffer();
+		}
+
+		this._animating = false;
+		this.redraw();
+		
+	},
+
+	_clearBgBuffer: function () {
+		var map = this._map;
+
+		if (map && !map._animatingZoom && !map.touchZoom._zooming) {
+			this._bgBuffer.innerHTML = '';
+			this._bgBuffer.style[L.DomUtil.TRANSFORM] = '';
+		}
+	},
+
+	_prepareBgBuffer: function () {
+
+		var front = this._tileContainer,
+		    bg = this._bgBuffer;
+
+		// if foreground layer doesn't have many tiles but bg layer does,
+		// keep the existing bg layer and just zoom it some more
+
+		var bgLoaded = this._getLoadedTilesPercentage(bg),
+		    frontLoaded = this._getLoadedTilesPercentage(front);
+
+		if (bg && bgLoaded > 0.5 && frontLoaded < 0.5) {
+
+			front.style.visibility = 'hidden';
+			this._stopLoadingImages(front);
+			return;
+		}
+
+		// prepare the buffer to become the front tile pane
+		bg.style.visibility = 'hidden';
+		bg.style[L.DomUtil.TRANSFORM] = '';
+
+		// switch out the current layer to be the new bg layer (and vice-versa)
+		this._tileContainer = bg;
+		bg = this._bgBuffer = front;
+
+		this._stopLoadingImages(bg);
+
+		//prevent bg buffer from clearing right after zoom
+		clearTimeout(this._clearBgBufferTimer);
+	},
+
+	_getLoadedTilesPercentage: function (container) {
+		var tiles = container.getElementsByTagName('img'),
+		    i, len, count = 0;
+
+		for (i = 0, len = tiles.length; i < len; i++) {
+			if (tiles[i].complete) {
+				count++;
+			}
+		}
+		return count / len;
+	},
+
+	// stops loading all tiles in the background layer
+	_stopLoadingImages: function (container) {
+		var tiles = Array.prototype.slice.call(container.getElementsByTagName('img')),
+		    i, len, tile;
+
+		for (i = 0, len = tiles.length; i < len; i++) {
+			tile = tiles[i];
+
+			if (!tile.complete) {
+				tile.onload = L.Util.falseFn;
+				tile.onerror = L.Util.falseFn;
+				tile.src = L.Util.emptyImageUrl;
+
+				tile.parentNode.removeChild(tile);
+			}
+		}
+	}
+});
 
 }(window, document));

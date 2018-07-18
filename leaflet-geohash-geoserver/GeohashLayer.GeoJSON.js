@@ -322,7 +322,7 @@ L.GeohashLayer.GeoJSON = L.GeohashLayer.blockchain.extend({
     _tileLoaded: function (tile, tilePoint) {
         L.GeohashLayer.blockchain.prototype._tileLoaded.apply(this, arguments);
         if (tile.datum === null) { 
-        	alert(tilePoint);
+        	//alert(tilePoint);
         	return null; }
         this.addTileData(tile.datum, tilePoint);
     }
