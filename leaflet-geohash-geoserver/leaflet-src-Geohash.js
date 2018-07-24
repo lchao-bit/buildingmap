@@ -9529,7 +9529,7 @@ L.Map.include({
 		    center = bounds.getCenter(),
 		    zoom = this._map.getZoom();
 
-		var j, i, geohash,neighbours;
+		var j, i, geohash,neighbours,tmq=[];
 		/*bounds_lonlat = L.bounds(
 				L.CRS.Simple.pointToLatLng(bounds.min,zoom),
 				L.CRS.Simple.pointToLatLng(bounds.max,zoom));*/
@@ -9537,171 +9537,63 @@ L.Map.include({
 		var max_x = Math.max(latlng1.lat, latlng2.lat);
 		var min_y = Math.min(latlng1.lng, latlng2.lng);
 		var max_y = Math.max(latlng1.lng, latlng2.lng);
-	
-		var step_x = latlng1.lat > latlng2.lat ? -1:1;
-		var step_y = latlng1.lng > latlng2.lng ? -1:1;
 		
-		//根据geohash精度选择滑动窗口
-		var wlen = 0.01;
-			switch(true){
-		case zoom <=5:
-		{
-			wlen = 0.6;
-			break;	
-		}
-		case zoom==6:
-		{
-			wlen = 0.6;
-			break;
-		}
-		case zoom==7:
-		{
-			wlen = 0.5;
-			break;
-		}
-		case zoom==8:
-		{
-			wlen = 0.4;
-			break;
-		}
-		case zoom==9:
-		{
-			wlen = 0.2;
-			break;
-		}
-		case zoom==10:
-		{
-			wlen = 0.25;
-			break;
-		}
-		case zoom==11:
-		{
-			wlen = 0.2;
-			break;
-		}
-		case zoom==12:
-		{
-			wlen = 0.08;
-			break;
-		}
-		case zoom==13:
-		{
-			//wlen = 0.04;
-			wlen = 0.017;
-			break;
-		}
-		case zoom==14:
-		{
-			//wlen = 0.02;
-			wlen = 0.015;
-			break;
-		}
-		case zoom==15:
-		{
-			wlen = 0.01;
-			break;
-		}
-		case zoom==16:
-		{
-			wlen = 0.005;
-			wlen = 0.001;
-			break;
-		}
-		case zoom==17:
-		{
-			wlen = 0.004;
-			break;
-		}
-		case zoom==18:
-		{
-			wlen = 0.002;
-			break;
-		}
-		default:
-		{
-			wlen = 0.001;
-			break;
-		}
-	
+		//var step_x = latlng1.lat > latlng2.lat ? -1:1;
+		//var step_y = latlng1.lng > latlng2.lng ? -1:1;
+		
+		/*4 corners 0(min_x,min_y),1(max_x,min_y),2(max_x,max_y),3(max_x,min_y)
+ * 1   2
+ *   x 
+ * 0   3
+ */
+  var c0_h = encode_geohash(min_y, min_x,zoom);
+  var c1_h = encode_geohash(min_y, max_x,zoom);
+  var c2_h = encode_geohash(max_y, max_x,zoom);
+  var c3_h = encode_geohash(max_y, min_x,zoom);
+  tmq.push(c0_h);
+  if((c0_h in this._tiles)==false){
+	  queue.push(c0_h);
 	}
-		//根据经纬度范围划分网格，暂定划分20个网格，即每个层级都是加载20个geohash块
-		
-		var range_x = Math.abs((max_x - min_x)/4);
-		var range_y = Math.abs((max_y - min_y)/4);
-		var step_x = latlng1.lat > latlng2.lat ? -range_x:range_x;
-		var step_y = latlng1.lng > latlng2.lng ? -range_y:range_y;
-		var center_x,center_y;
-		var center_q = [];
-		    //center = bounds.getCenter(),
-		//算出所有经纬度网格左上和右下点，中心点
-		for(var x = min_x- wlen; x < max_x + wlen ;){
-			for(var y = min_y - wlen; y < max_y + wlen;){
-		/*for(var x = min_x-range_x; x < max_x+range_x;){
-			for(var y = min_y-range_y; y < max_y+range_y;){*/
-				center_x = (x*2 + range_x)/2;
-				center_y = (y*2 + range_y)/2;
-				geohash = encode_geohash(center_y, center_x,zoom);
-				//geohash = encode_geohash(y, x,zoom);
-				if(((geohash in this._tiles)==false)&&(queue.indexOf(geohash) == -1))
-				{
-					queue.push(geohash);
-				}
-				/*neighbours = getNeighbour(geohash).concat(geohash);
-				for(var i=0; i<neighbours.length; i++){
-					//duplicate geohash
-						if((queue.indexOf(neighbours[i]) != -1)||(neighbours[i] in this._tiles)){
-							continue;
-						}
-						queue.push(neighbours[i]);
-				}*/
-				y += wlen*range_y;
+  /*从0位置开始计算geohash值，先向1方向计算所有top邻居，直到与线（1,2）有交集为止，将所有geohash值存入queue中；
+ 	*再从0位置开始，计算每个queue中每个geoahsh的right邻居，直到right邻居与线（2,3）有交集为止，将所有right邻居存入queue
+ 	*/
+ 	 var tmps = decode_geohash(c0_h);
+ 	 var tmp_bound = {};
+ 	 tmp_bound.min_x = Math.min(tmps[2], tmps[3]);
+ 	 tmp_bound.max_x = Math.max(tmps[2], tmps[3]);
+	 tmp_bound.min_y = Math.min(tmps[0], tmps[1]);
+	 tmp_bound.max_y = Math.max(tmps[0], tmps[1]);
+	 
+	 //0所在的geohash块和线（1,2）是否相交
+	 for(i=0;i<tmq.length;i++){
+		 	geohash = tmq[i];
+		 	neighbours = getNeighbour(geohash).concat(geohash);
+			//得到每个块的top邻居
+			tmq.push(neighbours[0]);
+		  if(((neighbours[0] in this._tiles)==false)&&(queue.indexOf(neighbours[0]) == -1)){
+			  queue.push(neighbours[0]);
 			}
-			x += wlen*range_x;
+			if(neighbours[0]==c1_h){
+				break;
+			}
 		}
 		
-		/*for(var x = min_x; x < max_x + wlen && x > min_x - wlen; x+=step_x){
-			for(var y = min_y; y < max_y + wlen && y > min_y - wlen; y+=step_y){
-			
-				geohash = encode_geohash(y, x,zoom);
+		//计算queue中每个geohash块的right邻居
+		for(i=0;i<tmq.length;i++){
+			//if(cq>0){
+				geohash = tmq[i];
 				neighbours = getNeighbour(geohash).concat(geohash);
-				if(((geohash in this._tiles)==false)&&(queue.indexOf(geohash) == -1))
-				{
-					queue.push(geohash);
+				//得到每个块的right邻居
+				tmq.push(neighbours[1]);
+			  if(((neighbours[1] in this._tiles)==false)&&(queue.indexOf(neighbours[1]) == -1)){
+				  queue.push(neighbours[1]);
 				}
-				for(var i=0; i<neighbours.length; i++){
-					//duplicate geohash
-						if((queue.indexOf(neighbours[i]) != -1)||(neighbours[i] in this._tiles)){
-							continue;
-						}
-						queue.push(neighbours[i]);
+				//当计算到c2时，结束计算
+				if(neighbours[1]==c2_h){
+					break;
 				}
 			}
-		}*/
-		
-		
-		
-		//zc,get areas which has intersection with the road. for lon, 0.01 degree is equal to about 1000m and 1113m for lat
-		/*for(var x = latlng1.lat; x < max_x + 0.01 && x > min_x - 0.01; x+=0.01 * step_x){
-			for(var y = latlng1.lng; y < max_y + 0.01 && y > min_y - 0.01; y+=0.01 * step_y){*/
-		/*for(var x = latlng1.lat; x < max_x + wlen && x > min_x - wlen; x+=wlen * step_x){
-			for(var y = latlng1.lng; y < max_y + wlen && y > min_y - wlen; y+=wlen * step_y){
-			
-				geohash = encode_geohash(y, x,zoom);
-				neighbours = getNeighbour(geohash).concat(geohash);
-				if(((geohash in this._tiles)==false)&&(queue.indexOf(geohash) == -1))
-				{
-					queue.push(geohash);
-				}
-				for(var i=0; i<neighbours.length; i++){
-					//duplicate geohash
-						if((queue.indexOf(neighbours[i]) != -1)||(neighbours[i] in this._tiles)){
-							continue;
-						}
-						queue.push(neighbours[i]);
-				}
-			}
-		}*/
-		
+	
 
 		var tilesToLoad = queue.length;
 

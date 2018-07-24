@@ -22,14 +22,24 @@ function encode_geohash(longitude, latitude,z){
 			precision = 4;
 			break;
 		}
-		case z>=10 && z<=15:
+		case z>=10 && z<=13:
+		{
+			precision = 5;
+			break;
+		}
+		case z>=14 && z<=16:
 		{
 			precision = 6;
 			break;
 		}
+		case z==18:
+		{
+			precision = 7;
+			break;
+		}
 		default:
 		{
-			precision = 8;
+			precision = 8;//8
 			break;
 		}
 	
