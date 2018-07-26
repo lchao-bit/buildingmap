@@ -32,7 +32,7 @@ function encode_geohash(longitude, latitude,z){
 			precision = 6;
 			break;
 		}
-		case z==18:
+		case z>=17 && z<=18:
 		{
 			precision = 7;
 			break;
