@@ -161,7 +161,10 @@ http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/buildingmap/leaflet-geohash-geo
 4. 总结  
   1. 上面的测试结果都在服务器端进行，但每组数据只进行了少量测试，未进行大量多次实验；且实验结果受网络传输条件等影响，实验结果会有一定波动。
   1. 由于在各个层级上瓦片数据和geohash数据加载的块数不同，且大部分都是geohash加载的数据块较多，所以存在传输和响应时间的差别。
-
+# 结果分析2
+1. 实验环境  
+&emsp;&emsp;操作系统：windows7 64位；处理器：Intel Core i5-4690K 3.5GHz;内存：8GB；    
+2. 选择地图上的5个位置，分别在地图缩放等级为13-16级上进行性能比较
 [BIB]
 
 
