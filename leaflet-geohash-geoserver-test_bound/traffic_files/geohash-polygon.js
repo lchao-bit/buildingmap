@@ -1,40 +1,137 @@
-var precision;
+var precision ;
 var Bits = [16, 8, 4, 2, 1];
 var Base32 = "0123456789bcdefghjkmnpqrstuvwxyz".split("");
 
-function encode_geohash(longitude, latitude,z){
+
+//read map in json format
+var fs=require('fs');
+var map_file="./polygon_bit_more_change";
+var maps = fs.readFileSync(map_file);
+var lineReader = require('./line-reader');
+var counter = 0;
+lineReader.eachLine(map_file, function(line, last, cb) {
+  	read_lonlat(line);
+  	cb();
+	//console.log(++counter);
+});
+
+
+/*var top_bound = [ "wx4eqd8tu5ct5e",
+									"wx4eqdfs5zhenx",
+									"wx4eqejkz4bpyb",
+								  "wx4eqg259j0gj4",
+									"wx4eqgd11n5qnc"];
+var right_bound = [ "wx4eqgd11n5qnc",
+									  "wx4eqg6k0pept5",
+										"wx4eqg4x9yk6dx",
+										"wx4eqg4c6j123b",
+										"wx4eqfgh0e65gj",
+										"wx4eqf53h2w3s4",
+										"wx4eqfen4gketp",
+										"wx4eqcewgfkfrt"];
+var buttom_bound = [	"wx4eqcewgfkfrt",
+											"wx4eqcejsyzv09",
+											"wx4eqc9whvzdr0",
+											"wx4eq9wy86z7z4",
+											"wx4eq9tq7x0ke8",
+											"wx4eq9eydhex6r",
+											"wx4eq9dq86z7fd",
+											"wx4eq99qd6v7y4"];
+var left_bound = [  "wx4eq99qd6v7y4",
+									  "wx4eq9cnjp1fq0",
+										"wx4eqd0zrvtgkd",
+										"wx4eqd2g5uzjh6",
+										"wx4eqd2tv2y37n",
+										"wx4eqd8b8pb7ey",
+										"wx4eqd8dvfvr0q",
+										"wx4eqd8tu5ct5e"];
+var top_lonlat = [
+	[39.96103, 116.30213],
+	[39.96212, 116.30487],
+	[39.9636,  116.30878],
+	[39.96477, 116.3123],
+	[39.96572, 116.31505],
+];
+var tmp_top=[],tmp_right=[],tmp_buttom=[],tmp_left=[],i=0,neighbours,tg0,tg1;
+var bound = {},tmp=[],x1,x2,y1,y2;
+//top
+tmp_top.push(top_bound[0]);
+for(i = 0;i< top_bound.length-1;i++){
+		tg0 = top_bound[i];
+		x1 = top_lonlat[i][0];
+		y1 = top_lonlat[i][1];
+		x2 = top_lonlat[i+1][0];
+		y2 = top_lonlat[i+1][1];
+		neighbours = getNeighbour(tg0).concat(tg0);
+			//å¾—åˆ°æ¯ä¸ªå—çš„top_right,right,bottom_righté‚»å±…5,1,7
+			tmp.push(neighbours[5]);
+			tmp.push(neighbours[1]);
+			tmp.push(neighbours[7]);
+			for(var j=0;j<3;j++){
+					var pos = decode_geohash(tmp[j]);
+					bound.min_x = Math.min(pos[0],pos[1]);
+					bound.max_x = Math.max(pos[0],pos[1]);
+					
+					bound.min_y = Math.min(pos[2],pos[3]);
+					bound.max_y = Math.max(pos[2],pos[3]);
+					
+					if(has_intersection(x1, x2, y1, y2, bound)){
+						tmp_top.push(tmp[j]);
+						console.log(tmp[j]);
+						break;
+					}
+			}	
+}
+*/
+
+
+
+function read_lonlat(line){
+	//var road_json= line;
+	var nodes = line.split(","); 
+	//console.log(nodes);
+	inputs(8,nodes[0],nodes[1]);	
+}
+
+function inputs(input_p,longitude, latitude){
+	precision = input_p;
+	var cur_geohash = encode_geohash(longitude, latitude);
+	var cur_lonlat = decode_geohash(cur_geohash);
+	var declon = (cur_lonlat[0] + cur_lonlat[1])/2;
+	var declat = (cur_lonlat[2] + cur_lonlat[3])/2;
+	//console.log("longitude:" + longitude +",latitude:" + latitude);
+	//console.log("encode_geohash:" + cur_geohash);
+	//console.log("decode_geohash_lon:" + declon + " decode_geohash_lat:" + declat);
+	//è§£ç åŽçš„ç»çº¬åº¦å–å°æ•°ç‚¹åŽ7ä½å¹¶å››èˆäº”å…¥
+	declon = declon * 10000000;
+	declon = (Math.round(declon)/10000000).toFixed(5);
+	declat = declat * 10000000;
+	declat = (Math.round(declat)/10000000).toFixed(5);
+	//console.log("å–å°æ•°ç‚¹åŽ7ä½å¹¶å››èˆäº”å…¥åŽç»çº¬åº¦ï¼š");
+	//console.log("decode_geohash_lon:" + declon + " decode_geohash_lat:" + declat);
+	longitude = longitude* 10000000;
+	longitude = (Math.round(longitude)/10000000).toFixed(5);
+	latitude = latitude* 10000000;
+	latitude = (Math.round(latitude)/10000000).toFixed(5);
+	//var data  = [longitude,latitude,cur_geohash,declon,declat,"\n"];
+	var data  = [cur_geohash];
+	//var data1  = [longitude,latitude+"\n"];
+	//var data2  = [declon,declat+"\n"];
+	fs.writeFile('./geohash_polygon_bit_new_8',"\""+data+"\""+","+"\n",{flag:'a'}, function(err) {
+    if (err) {
+        throw err;
+    }
+   });
+}
+
+function encode_geohash(longitude, latitude){
 	var geohash = "";
 	var even = true;
 	var bit = 0;
 	var ch = 0;
 	var pos = 0;
-  var lat = [-90,90];
+    var lat = [-90,90];
 	var lon = [-180,180];
-	//Ôö¼Ó¸ù¾ÝËõ·ÅµÈ¼¶zµÄgeohash±àÂë³¤¶ÈÅÐ¶Ï
-	switch(true){
-		case z <=5:
-		{
-			precision = 2;
-			break;	
-		}
-		case z>=6 && z<=9:
-		{
-			precision = 4;
-			break;
-		}
-		case z>=10 && z<=15:
-		{
-			precision = 6;
-			break;
-		}
-		default:
-		{
-			precision = 8;
-			break;
-		}
-	
-	}
-	
 	while(geohash.length < precision){
 		var mid;
 
@@ -99,94 +196,6 @@ function decode_geohash(geohash)
 	}
 
 	return new Array(lon[0], lon[1], lat[0], lat[1]);
-}
-
-//decode geohash array to coord array
-function decode_geohashs(geohashs){
-	var even = true;
-  var lat = [-90,90];
-	var lon = [-180,180];
-	var tmpg,tlon,tlat,curcoord = [];
-	var coords = new Array();
-	var coords0= new Array();
-	var geohashs0 = geohashs[0];
-	for(var k = 0;k<geohashs0.length;k++){
-		tmpg = geohashs0[k];
-		for(var i=0; i< tmpg.length; i++)
-			{
-				var c= tmpg[i];
-				var cd = Base32.indexOf(c);
-				for (var j = 0; j < 5; j++)
-				{
-					var mask = Bits[j];
-					if (even)
-					{
-						RefineInterval(lon, cd, mask);
-					}
-					else
-					{
-						RefineInterval(lat, cd, mask);
-					}
-					even = !even;
-				}
-			}
-		tlon = (lon[0]+lon[1])/2;
-		tlat = (lat[0]+lat[1])/2;
-		//±£Áô7Î»Ð¡Êý²¢ËÄÉáÎåÈë
-		tlon = (Math.round(tlon*10000000)/10000000).toFixed(7);
-		tlat = (Math.round(tlat*10000000)/10000000).toFixed(7);
-		curcoord = [tlon,tlat];
-		coords.push(curcoord);
-		even = true;
-		lat = [-90,90];
-	  lon = [-180,180];
-	}	
-	coords0.push(coords);
-	return coords0;
-}
-
-//decode of Linestring
-function decode_geohashsLine(geohashs){
-	var even = true;
-  var lat = [-90,90];
-	var lon = [-180,180];
-	var tmpg,tlon,tlat,curcoord = [];
-	var coords = new Array();
-	var coords0= new Array();
-	var geohashs0 = geohashs;
-	for(var k = 0;k<geohashs0.length;k++){
-		tmpg = geohashs0[k];
-		for(var i=0; i< tmpg.length; i++)
-			{
-				var c= tmpg[i];
-				var cd = Base32.indexOf(c);
-				for (var j = 0; j < 5; j++)
-				{
-					var mask = Bits[j];
-					if (even)
-					{
-						RefineInterval(lon, cd, mask);
-					}
-					else
-					{
-						RefineInterval(lat, cd, mask);
-					}
-					even = !even;
-				}
-			}
-		tlon = (lon[0]+lon[1])/2;
-		tlat = (lat[0]+lat[1])/2;
-		//±£Áô7Î»Ð¡Êý²¢ËÄÉáÎåÈë
-		tlon = (Math.round(tlon*10000000)/10000000).toFixed(7);
-		tlat = (Math.round(tlat*10000000)/10000000).toFixed(7);
-		curcoord = [tlon,tlat];
-		coords.push(curcoord);
-		even = true;
-		lat = [-90,90];
-	  lon = [-180,180];
-	}	
-	coords0.push(coords);
-	return coords0;
 }
 
 function has_intersection_linestring(path, bound){
@@ -286,37 +295,4 @@ function RefineInterval(interval, cd, mask)
 	{
 		interval[1] = (interval[0] + interval[1])/2;
 	}
-}
-
-function get_geohash_by_tile(x,y,z){
-	var x1 = tile2long(x,z);
-	var x2 = tile2long(x+1,z);
-	var y1 = tile2lat(y,z);
-	var y2 = tile2lat(y+1,z);
-
-	var min_x = Math.min(x1, x2);
-	var max_x = Math.max(x1, x2);
-	var min_y = Math.min(y1, y2);
-	var max_y = Math.max(y1, y2);
-
-	var hash_array = new Array();
-	for(var x = min_x; x < max_x + 0.01; x+=0.01){
-		for(var y = min_y; y < max_y + 0.01; y+=0.01){
-			geohash = encode_geohash(x, y);
-			//duplicate geohash
-			if(hash_array.indexOf(geohash) != -1){
-				continue;
-			}
-			hash_array.push(geohash);
-		}
-	}
-	return hash_array;
-}
-
-function tile2long(x,z) {
-	return (x/Math.pow(2,z)*360-180);
-}
-function tile2lat(y,z) {
-	var n=Math.PI-2*Math.PI*y/Math.pow(2,z);
-	return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
 }

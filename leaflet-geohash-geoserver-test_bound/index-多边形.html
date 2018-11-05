@@ -1,0 +1,3297 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">  <!-- zc,声 明 网页语言 --> 
+<head>
+    <meta charset="utf-8" />  <!-- zc,使用中文 -->
+    <title>Leaflet test</title>
+
+	<style type="text/css">
+	/*css控制地图大小自动充满整个窗口*/
+	html{height:100%}
+	body{height:95%}
+	
+	#row1{float:left;display: inline ;}
+	body{background: #ecf0f1;color: #34495e;text-shadow: white 1px 1px 1px;}.value{text-align: middle;font-weight: bold;width: 210px;line-height: 60px;margin: -18px auto;letter-spacing: -0.07em;text-shadow: white 2px 2px 2px;}input[type="range"] {display: block;-webkit-appearance: none;background-color: #bdc3c7;width: 100%;height: 10px;border-radius: 5px;margin: 5px auto;outline: 0;}input[type="range"]::-webkit-slider-thumb {-webkit-appearance: none;background-color: #e74c3c;width: 30px;height: 30px;border-radius: 50%;border: 2px solid white;cursor: pointer;transition: 0.3s ease-in-out;}.range{position:relative;width:900px;margin:0 auto;} /*width:300px*/
+	
+	#map{width: 100%;height:98%}
+	
+	</style>
+	<link rel="stylesheet" href="leaflet.css" />
+	<link rel="stylesheet" href="leaflet.label.css" />
+	<script src="leaflet-src-Geohash.js"></script>
+	<script src="TileLayer.GeoJSON.js"></script>	
+	<script src="leaflet.label-src.js"></script>
+	<script src="leaflet.label.js"></script>
+	<script src="OSMBuildings-Leaflet.debug.js"></script>
+		<!-- 区块链geohash地图相关库文件的添加 -->
+	<script type="text/javascript" src="./traffic_files/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="./traffic_files/web3.js"></script>
+	<script type="text/javascript" src="./traffic_files/truffle-contract.js"></script>
+	<script type="text/javascript" src="./traffic_files/geohash-new.js"></script>
+	<script type="text/javascript" src="./traffic_files/StoreMap.json"></script>
+	<script type="text/javascript" src="./traffic_files/common.js"></script>
+	<script src="GeohashLayer.GeoJSON.js"></script>
+	
+	<!-- 库文件的添加 -->
+</head>
+<body>
+		<!-- zc,添加路况按钮 -->
+		<!-- 3.6,2010.4.16数据有问题-->
+<div id="body">	
+	<div id="row1" class="value">2015年01月01日0点00-04分</div> 
+	<div id="row1" class="range"><input type="range" min="14200416" max="15147357" step="stepchange()" value="14200416" oninput="change()">
+				<p class="rang_width"></p> <!--min=2015年1月1日0:0，单位分，max=2017年12月31日23:55，step为24小时=288*3-->
+	</div>
+	<div id="row1">
+		<button id="road map">显示路况</button>
+		<button id="road map close">取消显示路况</button></div>
+	</div>    
+	<!-- zc,添加路况结束 -->
+	<div id="map"></div>	
+</div>
+	
+	<!-- zc,注册事件函数,浏览器点击事件 -->
+	<script>
+		var roadCondition_flag=0;//路况触发信号
+		var roadConditionTime = 0; //路况时间参数
+		var cury=2015,curm=1,curd=1, hourValue=0 ,minuteValue=1;
+		
+		document.getElementById('road map').onclick = function(){
+			roadCondition_flag = 1;
+			if(roadCondition_flag == 1){
+				change();
+			}
+		}
+		
+		//<!-- zc,滑动选择时间 -->		
+		var elem = document.querySelector('input[type="range"]');
+		var sDValue="2015年01月01日00点0-4分",tempCondition ;
+		var ltime;//上次选择的时间
+		var tmputc = 14200416;
+		//控制时间轴时间间隔
+		document.onkeydown=function(e){ 
+			 e=window.event||e;
+			if (e.keyCode==37 || e.keyCode==39)
+			{
+				//elem.disabled = false;
+				elem.step = 3;//切换键盘左右键时，一格变为5分钟，一个时间片
+				change();
+			}
+			/*else
+				{elem.disabled = true;}*/
+			
+			/*if ((lkc==null || lkc.keyCode==37)&&e.keyCode==39)
+			{
+				var tv = elem.value;
+				elem.setAttribute("value",tv+3);
+			}
+			else if((lkc==null || lkc.keyCode==39)&&e.keyCode==37)
+				{
+					elem.value = elem.value - 3;
+				}
+			lkc=e;	*/			
+		};
+		document.onmousedown=function(){
+			elem.step = 864;//鼠标拖动时，一格变为1小时
+		}	
+		function change(){
+			if(roadCondition_flag == 1){
+					//滑动选择日期
+						var months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+						var days = ["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"];
+						var seqs = ["00-04","05-09","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59"];	
+						var ym = "年",mm = "月",dm = "日",hm = "点",seqm="分";
+						var DrangeValue = function(){
+							ltime = tmputc;
+							//选中的utc时间
+							tmputc = elem.value;
+							var tmpt = new Date();
+							tmpt.setTime(tmputc * 100000);
+							//tmpt.setTime(14962701*100000);
+							cury = tmpt.getFullYear();
+							curm = months[tmpt.getMonth()];
+							//curm = tmpt.getMonth()+1;
+							curd = days[tmpt.getDate()-1];
+							//curd = tmpt.getDate();
+							hourValue = tmpt.getHours();//
+							var tm,tseq;
+							tm = tmpt.getMinutes();  // 获取分钟数(0-59)
+							//判断时间片
+							if(tm<5)
+								tseq=0;
+							else if (tm>=5&&tm<10)
+								tseq=1;
+							else if (tm>=10&&tm<15)
+								tseq=2;
+							else if (tm>=15&&tm<20)
+								tseq=3;
+							else if (tm>=20&&tm<25)
+								tseq=4;
+							else if (tm>=25&&tm<30)
+								tseq=5;
+							else if (tm>=30&&tm<35)
+								tseq=6;
+							else if (tm>=35&&tm<40)
+								tseq=7;
+							else if (tm>=40&&tm<45)
+								tseq=8;
+							else if (tm>=45&&tm<50)
+								tseq=9;
+							else if (tm>=50&&tm<55)
+								tseq=10;
+							else
+								tseq=11;
+					
+		    			minuteValue = tseq+1;//记录时段
+							//tempCondition = sDValue;
+							sDValue = cury +ym + curm + mm + curd + dm + hourValue + hm + seqs[tseq] + seqm;
+							
+						
+				  var newDValue = elem.value;
+				  var target = document.querySelector('.value');
+				  target.innerHTML = sDValue;//newValue
+				  var max = elem.getAttribute("max");
+				  var width = (91.3 / max * newDValue) +"%";    //这里的91.3是用了整个滑块的宽度300减去拖动的那个圆形滑块的宽度30再加上圆形滑块的边框宽度4然后再除以300得来的，因为显示拖动距离的rang_width在绝对定位后在滑动过程中会遮挡住圆形滑块，导致圆形滑块无法被拖动，所以要适当的减少rang_width在滑动时的宽度，当然rang_width的宽度是根据你自己的实际需求来计算出来的，并不是一成不变的91.3%
+				  document.querySelector('.rang_width').style.width = width;
+				
+				  };
+					elem.addEventListener("input", DrangeValue);
+		  
+		    	//var tempCondition = roadConditionTime;
+		    	//roadConditionTime = parseInt(hourValue)*12 + parseInt(minuteValue);
+		    	//if(roadConditionTime != tempCondition)
+		    	if(roadCondition_flag == 1)
+		    		map.removeLayer(GeoJSONRoadConditionLayer);
+		    	/*if(sDValue != tempCondition)
+		    		{
+							map.removeLayer(GeoJSONRoadConditionLayer);
+		      	}
+		      else if(roadConditionTime == tempCondition && roadCondition_flag == 1)
+		  			{
+		  				return;
+		  			}*/
+		  			
+		   	
+		    var ltmpt = new Date();
+				ltmpt.setTime(ltime * 100000);
+				var selectDay = days[ltmpt.getDate()-1];
+		    var selectMonth = months[ltmpt.getMonth()];
+		    var selectYear = ltmpt.getFullYear();
+				var selectHour = ltmpt.getHours();
+				var selectMinute; 
+				var ltm,ltseq;
+				ltm = ltmpt.getMinutes();  // 获取分钟数(0-59)
+							//判断时间片
+							if(ltm<5)
+								ltseq=0;
+							else if (ltm>=5&&ltm<10)
+								ltseq=1;
+							else if (ltm>=10&&ltm<15)
+								ltseq=2;
+							else if (ltm>=15&&ltm<20)
+								ltseq=3;
+							else if (ltm>=20&&ltm<25)
+								ltseq=4;
+							else if (ltm>=25&&ltm<30)
+								ltseq=5;
+							else if (ltm>=30&&ltm<35)
+								ltseq=6;
+							else if (ltm>=35&&ltm<40)
+								ltseq=7;
+							else if (ltm>=40&&ltm<45)
+								ltseq=8;
+							else if (ltm>=45&&ltm<50)
+								ltseq=9;
+							else if (ltm>=50&&ltm<55)
+								ltseq=10;
+							else
+								ltseq=11;
+					
+		    			selectMinute = ltseq+1;//记录时段
+			   var lroadConditionTime = parseInt(selectHour)*12 + parseInt(selectMinute);
+		    GeoJSONRCURL = URLRef+'geoserver/n/{z}/{x}/{y}' + '/' + selectYear + '/' + selectMonth +'/' + selectDay +'/' + lroadConditionTime;//'/15/26969/12418'
+		    //test
+		    //GeoJSONRCURL = URLRef+'geoserver/n/{z}/{x}/{y}' + '/' + '2017' + '/' + '06' +'/' + '01' +'/' + '68';//'/15/26969/12418'
+				/*GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
+		  		{
+		  			style:myroadconditionstyle,
+		  			onEachFeature:myoneach,
+		  			filter:myRoadConditionfilter
+		  		}) 
+		  		map.addLayer(GeoJSONRoadConditionLayer);*/
+			}
+		}
+		
+  	document.getElementById('road map close').onclick = function(){
+  		roadCondition_flag = 0;
+  		roadConditionTime = 0;
+  		//map.removeLayer(GeoJSONRoadConditionLayer);
+  	}
+	</script>
+	<!-- zc,浏览器点击事件结束 -->
+
+	<script>
+		var map = L.map('map',{maxZoom:17,minZoom:13}).setView([39.96103,116.30213/*39.894, 116.3155*/], 15);//13
+		
+		//创建地图容器以及定义初始点
+	</script>
+	<script>//zc,添加比例尺
+		var scaleControl = L.control.scale({  
+                   position: 'bottomleft'  
+         });  
+         map.addControl(scaleControl);  
+		</script>
+
+	<script src="water.js"></script>	
+	<script src="ways.js"></script>
+	<script src="landcover.js"></script>	
+	<script src="railway.js"></script>	
+	<!-- 样式表的添加 -->
+	<script>
+		var shopIcon =new L.Icon(
+		{
+			iconUrl: 'images/shop.png',
+			iconSize:     [16, 16], 
+			iconAnchor:   [8, 8]
+		});
+		var waitingIcon =new L.Icon(
+		{
+			iconUrl: 'images/waiting.png',
+			iconSize:     [16, 16], 
+			iconAnchor:   [8, 8]
+		});
+		//添加室内图标类型
+		function styleSheet() {
+			this.color			=undefined;
+			this.fillColor		=undefined;
+			this.weight			=undefined;
+			this.dashArray		=undefined;
+			this.lineCap		='round';
+			this.lineJoin		='round';
+			this.line_clip		=false;
+			this.opacity		=1;
+			this.fillOpacity	=0;
+		}
+		//样式表原型
+		function mystyle(feature){
+			if(map.getZoom()>18){
+				if(feature.properties.room==='building')
+				{
+					return {color: "#ff0000",weight: 1,fill:true,fillColor:'#cccccc',fillOpacity:1};
+				}
+				if(feature.properties.room==='waiting')
+				{
+					return {color: "#ff0000",weight: 1,fill:true,fillColor:'#ff88ff',fillOpacity:1};
+				}
+				if(feature.properties.room==='shop')
+				{
+					return {color: "#ff0000",weight: 1,fill:true,fillColor:'#88ffff',fillOpacity:1};
+				}
+				if(feature.properties.room)
+				{
+					return {color: "#ff0000",weight: 1,fill:true,fillColor:'#ffff88',fillOpacity:1};
+				}
+			}
+			//室内样式的定义
+			else{
+				var zoom = map.getZoom();
+				var style=new styleSheet();
+				var style=waterCss(feature.properties,zoom,style);
+				var style=waysCss(feature.properties,zoom,style);
+				var style=landcoverCss(feature.properties,zoom,style);
+				var style=railwayCss(feature.properties,zoom,style);
+				if(style.fillColor!==undefined)
+				{
+					style.fillOpacity=1;
+				}
+				return style;
+			}
+			//将样式表原型与缩放等级传入赋值函数
+		};
+		
+		//zc
+			function myroadconditionstyle(feature)
+			{
+				var zoom = map.getZoom();
+			
+					//zc,添加路况样式------------
+				if(roadCondition_flag == 1 && feature.properties.highway != undefined && feature.properties.highway != null) {
+			 		//根据道路渲染规则"stylesheets/ways.js" 初始化道路对象
+					
+					if(feature.properties.average_speed<(20/3.6))//10
+					{
+						return {color:'#EE0000',weight:6,fill:false,fillOpacity:0.2};//线条颜色 拥堵
+					}
+					if(feature.properties.average_speed>=(20/3.6) && feature.properties.average_speed<(40/3.6))//10  20
+					{
+							return {color:'#FFCC00',weight:6,fill:false,fillOpacity:0.5};//线条颜色 缓行
+					}
+					if(feature.properties.average_speed>=(40/3.6))
+					{
+						return {color:'#66FF00',weight:6,fill:false,fillOpacity:0.6};//线条颜色 顺畅
+					}
+					if(feature.properties.average_speed==null || feature.properties.average_speed==undefined)
+					{
+						return {color:'#DCDCDC',weight:6,fill:false,fillOpacity:0.7};//线条颜色 顺畅#DCDCDC
+					}
+			 		
+				};//if type==way end
+				//zc-------------------------
+				return style;
+			};
+			
+		var iconArray=[];
+		var iconcount=0;
+		var labelArray=[];
+		var labelcount=0;
+		
+		var singlelabelArray=[];
+		var singlelabelcount=0;
+		//标记图标和文字标签对象以便处理
+		function myoneach(feature,layer){
+			if(map.getZoom()<feature.properties.minzoom)
+			{
+				return;
+			}
+			if(map.getZoom()>18){
+				if(feature.properties.room==='waiting'){
+					iconArray[iconcount] = L.marker(layer.getBounds().getCenter(),{icon:waitingIcon});
+					map.addLayer(iconArray[iconcount]);
+					iconcount++;
+				}
+				if(feature.properties.room==='shop'){
+					iconArray[iconcount] = L.marker(layer.getBounds().getCenter(),{icon:shopIcon});
+					map.addLayer(iconArray[iconcount]);
+					iconcount++;
+				}
+				var label = new L.Label();
+				labelArray[labelcount]=label;
+				labelcount++;
+				label.setContent(feature.properties.name);
+				label.setLatLng(layer.getBounds().getCenter());
+				map.showLabel(label);	
+			}
+			//为室内对象绑定图标
+			else if(map.getZoom()===13){
+						if(((feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
+						&&(feature.properties.highway==='primary'||feature.properties.highway==='motorway'))){
+					var label = new L.Label();
+					for(x in labelArray)
+					{
+						if(feature.properties.name ===labelArray[x]._content)
+						{
+							return;
+						}
+					}
+					labelArray[labelcount]=label;
+					labelcount++;
+					label.setContent(feature.properties.name);
+					//label.setLatLng(layer.getBounds().getCenter());
+					//map.showLabel(label);			
+					
+					//道路方向
+						var i=0,j=0;
+						var tlat=0,tlng=0;
+					 	
+					 	i = layer._latlngs[layer._latlngs.length-1].lat -layer._latlngs[0].lat;
+					 	j = layer._latlngs[layer._latlngs.length-1].lng -layer._latlngs[0].lng;
+					 	
+					 	if(i > j)
+					 	{
+					 			tlat=12;
+					 	}
+					 	else
+					 		{
+					 				tlng=12;
+					 		}
+					//zc,单字符显示道路名字
+					var str = feature.properties.name;
+					var couts = layer._latlngs.length;
+					
+					for(var i=0;i < str.length;i++)
+					{
+						var tmplabel = new L.Label();
+						singlelabelArray[singlelabelcount]=tmplabel;
+						singlelabelcount++;
+						tmplabel.setContent(str.substr(i,1));
+						//var t = Math.round(couts/2) + i;
+						
+					 	//var t=map.project(layer._latlngs[0]);
+					  var t=map.project(layer.getBounds().getCenter());
+					 	t.x=t.x+tlat*(i-1);
+					 	t.y=t.y+tlng*(i-1);
+					 	var t1=map.unproject(t);
+						tmplabel.setLatLng(t1);
+						map.showLabel(tmplabel);	
+					}
+				}
+			}
+			else if(map.getZoom()===14){
+						if(((feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
+						&&(feature.properties.highway==='primary'||feature.properties.highway==='secondary'||feature.properties.highway==='trunk'))){
+					var label = new L.Label();
+					for(x in labelArray)
+					{
+						if(feature.properties.name ===labelArray[x]._content)
+						{
+							return;
+						}
+					}
+					labelArray[labelcount]=label;
+					labelcount++;
+					label.setContent(feature.properties.name);
+					//label.setLatLng(layer.getBounds().getCenter());
+					//map.showLabel(label);			
+					
+					//道路方向
+						var i=0,j=0;
+						var tlat=0,tlng=0;
+					 	
+					 	i = layer._latlngs[layer._latlngs.length-1].lat -layer._latlngs[0].lat;
+					 	j = layer._latlngs[layer._latlngs.length-1].lng -layer._latlngs[0].lng;
+					 	
+					 	if(i > j)
+					 	{
+					 			tlat=12;
+					 	}
+					 	else
+					 		{
+					 				tlng=12;
+					 		}
+					//zc,单字符显示道路名字
+					var str = feature.properties.name;
+					var couts = layer._latlngs.length;
+					
+					for(var i=0;i < str.length;i++)
+					{
+						var tmplabel = new L.Label();
+						singlelabelArray[singlelabelcount]=tmplabel;
+						singlelabelcount++;
+						tmplabel.setContent(str.substr(i,1));
+						//var t = Math.round(couts/2) + i;
+						
+					 	//var t=map.project(layer._latlngs[0]);
+					  var t=map.project(layer.getBounds().getCenter());
+					 	t.x=t.x+tlat*(i-1);
+					 	t.y=t.y+tlng*(i-1);
+					 	var t1=map.unproject(t);
+						tmplabel.setLatLng(t1);
+						map.showLabel(tmplabel);	
+					}
+				}
+			}
+						
+						
+			else if(map.getZoom()>=15){
+				if(feature.geometry.type==='LineString'&&!feature.properties.room&&!feature.properties.building&&!feature.properties.level&&feature.properties.name)
+				{
+					
+					var label = new L.Label();
+					for(x in labelArray)
+					{
+						if(feature.properties.name ===labelArray[x]._content)
+						{
+							return;
+						}
+					}
+					labelArray[labelcount]=label;
+					labelcount++;
+					label.setContent(feature.properties.name);
+					//label.setLatLng(layer.getBounds().getCenter());
+					//map.showLabel(label);			
+					
+					//道路方向
+						var i=0,j=0;
+						var tlat=0,tlng=0;
+					 	
+					 	i = layer._latlngs[layer._latlngs.length-1].lat -layer._latlngs[0].lat;
+					 	j = layer._latlngs[layer._latlngs.length-1].lng -layer._latlngs[0].lng;
+					 	
+					 	if(i > j)
+					 	{
+					 			tlat=12;
+					 	}
+					 	else
+					 		{
+					 				tlng=12;
+					 		}
+					//zc,单字符显示道路名字
+					var str = feature.properties.name;
+					var couts = layer._latlngs.length;
+					
+					for(var i=0;i < str.length;i++)
+					{
+						var tmplabel = new L.Label();
+						singlelabelArray[singlelabelcount]=tmplabel;
+						singlelabelcount++;
+						tmplabel.setContent(str.substr(i,1));
+						//var t = Math.round(couts/2) + i;
+						
+					 	//var t=map.project(layer._latlngs[0]);
+					  var t=map.project(layer.getBounds().getCenter());
+					 	t.x=t.x+tlat*(i-1);
+					 	t.y=t.y+tlng*(i-1);
+					 	var t1=map.unproject(t);
+						tmplabel.setLatLng(t1);
+						map.showLabel(tmplabel);	
+					}
+					
+					//labelArray[labelcount]=feature.properties.name;
+					//var str = feature.properties.name;
+					//var tmplabel = new L.Label();
+					/*for(var i=0;i < str.length;i++)
+					{
+						label.setContent(str.substr(i,1));
+						label.setLatLng(layer.getBounds().getCenter());
+						map.showLabel(label);	
+					}*/
+				}
+			}
+			//在缩放15级以上添加文字标签
+		};
+
+		function myLowfilter(feature,layer){
+			if(map.getZoom()<feature.properties.minzoom)
+			{
+				return false;
+			}
+			if(map.getZoom()>18){
+				if(feature.properties.room==='building')
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else{
+				if(feature.geometry.type==='Point'||feature.properties.level||feature.properties.building||feature.properties.natural==='water'||feature.properties.railway){
+					return false;
+				}
+				else{
+					if(feature.geometry.type==='Polygon'||feature.geometry.type==='MultiPolygon')
+					return true;
+				}
+			}
+		};
+		function myHighfilter(feature,layer){
+			if(map.getZoom()<feature.properties.minzoom)
+			{
+				return false;
+			}
+			if(map.getZoom()>18){
+				if(feature.properties.level&&feature.properties.room&&feature.properties.room!=='building'&&feature.geometry.type!=='Point'){
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+			else{
+				if(feature.geometry.type==='Point'||feature.properties.level||feature.properties.building){
+					return false;
+				}
+				else{
+					if(feature.geometry.type!=='Polygon'||feature.properties.natural==='water'||feature.properties.railway)
+					return true;
+				}
+			}
+		};
+		/*zc,Roadconditionfilter路况过滤器-----------------*/
+		function myRoadConditionfilter(feature,layer)
+		{
+			if(map.getZoom() < feature.properties.minzoom ||roadCondition_flag==0) 
+			{
+				return false;
+			}
+			if(roadCondition_flag==1)
+			{
+				if(feature.properties.natural==='water'|| feature.properties.building)
+					{
+						return false;
+					}
+				else
+					return true;
+			}	
+			else
+				{
+					return false;	
+				}
+		};
+		/*--------------------*/
+		
+		//过滤掉建筑和点数据,进行基本的数据分层
+		//1.15，新的地址访问方式
+		var URL = window.location.href;
+    var URLRef = URL.substr(0, URL.lastIndexOf('/', URL.lastIndexOf('/')-1)+1);
+    //在zchang路径下，需要多一层
+    URLRef = URLRef.substr(0, URLRef.lastIndexOf('/', URLRef.lastIndexOf('/')-1)+1);
+    //绝对路径访问方式
+    var URLRef = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/';
+		var GeoJSONURL = URLRef + 'geoserver/v/{z}/{x}/{y}';
+		
+		/*var GeoJSONLowLayer = new L.TileLayer.GeoJSON(GeoJSONURL,{maxZoom:19,minZoom:13},
+		{
+			style:mystyle,
+			onEachFeature:myoneach,
+			filter:myLowfilter,
+		})
+		map.addLayer(GeoJSONLowLayer);
+		var GeoJSONHighLayer = new L.TileLayer.GeoJSON(GeoJSONURL,{maxZoom:19,minZoom:13},
+		{
+			style:mystyle,
+			onEachFeature:myoneach,
+			filter:myHighfilter
+		})
+		map.addLayer(GeoJSONHighLayer);*/
+		
+		//zc,test geohashlayer
+		//<!-- 访问区块链 -->
+		//web3 api
+		var web3 = new Web3();
+		//web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
+		var MyContract = TruffleContract(contract_json);
+		// Step 3: Provision the contract with a web3 provider
+		MyContract.setProvider(new Web3.providers.HttpProvider("http://os.cs.tsinghua.edu.cn:11086"));//8545
+		var contract_addr = "0x42e7947e8eb0b2ea9ad12a25b07ff8669a943324";
+		var myContractInstance = MyContract.at(contract_addr);
+		var GeohashURL = myContractInstance;
+		
+		//geoserver上提供geohashjson的地址，根据geohash值即可得到
+		var GeohashURL = URLRef + 'geoserver/h/{z}/{h}';
+		
+		var GeohashlowLayer = new L.GeohashLayer.GeoJSON(GeohashURL,{maxZoom:19,minZoom:13},
+		{
+			style:mystyle,
+			onEachFeature:myoneach,
+			filter:myLowfilter
+		})
+		map.addLayer(GeohashlowLayer);
+		
+		var GeohashhighLayer = new L.GeohashLayer.GeoJSON(GeohashURL,{maxZoom:19,minZoom:13},
+		{
+			style:mystyle,
+			onEachFeature:myoneach,
+			filter:myHighfilter
+		})
+		map.addLayer(GeohashhighLayer);
+		GeohashhighLayer.setZIndex(4);
+		GeohashlowLayer.setZIndex(3);
+		
+		//zc----------------------------		
+		var GeoJSONRCURL = 'http://os.cs.tsinghua.edu.cn/GeoServer/vectormap/geoserver/t/15/26969/12418/2010/03/12/160';
+		//最后一位是时段，范围从1到288
+		//var GeoJSONRCURL = URLRef + 'geoserver/t/{z}/{x}/{y}' + '/2010/03/12/' + roadConditionTime;
+		/*var selectDay = (document.getElementById("select day")).value;
+    var selectMonth = (document.getElementById("select month")).value;
+    var selectYear = (document.getElementById("select year").value);*/
+		var selectDay = curd;
+		var selectMonth = curm;
+		var selectYear = cury;
+		var GeoJSONRCURL = URLRef + 'geoserver/n/{z}/{x}/{y}' + '/' + selectYear + '/' + selectMonth +'/' + selectDay +'/' + roadConditionTime;
+		var GeoJSONRoadConditionLayer = new L.TileLayer.GeoJSON(GeoJSONRCURL,{maxZoom:19,minZoom:13},
+  		{
+  			style:myroadconditionstyle,
+  			onEachFeature:myoneach,
+  			filter:myRoadConditionfilter
+  		}) 
+  		map.addLayer(GeoJSONRoadConditionLayer);
+		//------------------------------
+		/*console.log(GeoJSONHighLayer._container);
+		console.log(GeoJSONLowLayer._container);
+		//创建矢量数据层并将其装入地图容器
+		GeoJSONHighLayer.setZIndex(4);
+		GeoJSONLowLayer.setZIndex(3);*/
+		//zc------------------------------------
+		GeoJSONRoadConditionLayer.setZIndex(2);
+		
+		
+		//设定所在div层的显示层级
+		
+		GeohashlowLayer.on('load',function() {
+			console.log("all low visible tiles have been loaded");
+			if(map.getZoom()>18){console.log("indoor time");}
+			obdata.update();
+		});
+		GeohashhighLayer.on('load',function() {
+			console.log("all high visible tiles have been loaded");
+			if(map.getZoom()>18){console.log("indoor time");}
+			//zc,注释
+			obdata.update();
+		});
+		
+		/*zc,路况显示层级--------------*/
+		
+		GeoJSONRoadConditionLayer.on('load',function() {
+			obdata.update();
+		});
+		
+		/*----------------------------*/
+		//定义瓦片层加载完成后再加载建筑
+		//leaflet-src.js在2460,2489,2566行处有修改
+		//obdata定义于OSMBuildings-Leaflet.debug.js  2386行		
+		//var osmb = new OSMBuildings(map).load(GeoJSONURL,'');
+		//var osmb = new OSMBuildings(map).load(GeohashURL,'');
+		
+		//加载建筑数据层,OSMBuildings-Leaflet.debug.js 在532,585,1025,2139行处有修改
+	
+	//1.画多边形-----------------------------
+//var mypop = L.popup();
+//map.on('click', function(e) {
+//  var content = '你选择了这个点：<br>';
+//  content += e.latlng.toString();
+//  mypop.setLatLng(e.latlng)
+//       .setContent(content)
+//       .openOn(map);
+//});
+
+     GeohashlowLayer.on('load',function() { 
+         var polygon = L.polygon([																  
+																	  [39.96103, 116.30213],
+																	  [39.96212, 116.30487],
+																	  [39.9636,  116.30878],
+																	  [39.96477, 116.3123],
+																	  [39.96572, 116.31505],
+																	  [39.96487, 116.31535],
+																	  [39.96409, 116.31577],
+																	  [39.96301, 116.31612],
+																	  [39.9621,  116.3164],
+																	  [39.96107, 116.3165],
+																	  [39.95745, 116.31691],
+																	  [39.9557, 116.31723],
+																	  [39.95551, 116.31659],
+																	  [39.95559, 116.31453],
+																	  [39.95566, 116.31056],
+																	  [39.95564, 116.30863],
+																	  [39.95567, 116.30651],
+																	  [39.95566, 116.30438],
+																	  [39.95566, 116.30309],
+																	  [39.95697, 116.30286],
+																	  [39.95855, 116.30264],
+																	  [39.95919, 116.30247],
+																	  [39.95974,116.30234],
+																	  [39.96015, 116.3023],
+																	  [39.96051, 116.30221]
+																	],{
+																	  /*color: 'green',
+																	  fillColor: '#f03',
+																	  fillOpacity: 0.2*/
+																	  color:'red'
+																	}).addTo(map);
+			
+			//地图以多边形为中心展示
+			//map.fitBounds(polygon.getBounds());			
+		});
+//2.多边形边界的14位geohash值画在地图上
+var geohashs = [
+"wx4eqd88",
+"wx4eqd8d",
+"wx4eqd8e",
+"wx4eqd8s",
+"wx4eqd89",
+"wx4eqd8t",
+"wx4eqd8w",
+"wx4eqd0z",
+"wx4eqd2b",
+"wx4eqd2c",
+"wx4eqd2u",
+"wx4eqd2g",
+"wx4eqd2v",
+"wx4eqd2y",
+"wx4eqd2z",
+"wx4eqd8b",
+"wx4eqd8c",
+"wx4eqd8f",
+"wx4eqd8g",
+"wx4eqd8u",
+"wx4eqd2f",
+"wx4eqd8y",
+"wx4eqd8v",
+"wx4eq9c4",
+"wx4eq9c5",
+"wx4eqd8z",
+"wx4eq9cn",
+"wx4eq9cp",
+"wx4eqd10",
+"wx4eq9cj",
+"wx4eqd11",
+"wx4eqd14",
+"wx4eqd15",
+"wx4eqd1j",
+"wx4eqd1n",
+"wx4eq9ch",
+"wx4eqd1p",
+"wx4eqd1h",
+"wx4eqd31",
+"wx4eqd34",
+"wx4eqd35",
+"wx4eqd3h",
+"wx4eqd3n",
+"wx4eqd30",
+"wx4eqd3p",
+"wx4eqd90",
+"wx4eqd94",
+"wx4eqd91",
+"wx4eqd95",
+"wx4eqd9h",
+"wx4eqd9p",
+"wx4eqd9n",
+"wx4eqd9j",
+"wx4eq99q",
+"wx4eq99r",
+"wx4eq9c2",
+"wx4eqd3j",
+"wx4eq9c3",
+"wx4eq9c6",
+"wx4eq9ck",
+"wx4eq9cm",
+"wx4eq9cq",
+"wx4eq9cr",
+"wx4eqd12",
+"wx4eqd13",
+"wx4eqd16",
+"wx4eqd17",
+"wx4eqd1k",
+"wx4eqd1m",
+"wx4eqd1q",
+"wx4eqd1r",
+"wx4eqd32",
+"wx4eqd33",
+"wx4eqd36",
+"wx4eqd37",
+"wx4eqd3k",
+"wx4eqd3m",
+"wx4eqd3q",
+"wx4eq9c7",
+"wx4eqd92",
+"wx4eqd93",
+"wx4eqd96",
+"wx4eqd3r",
+"wx4eqd97",
+"wx4eqd9m",
+"wx4eqd9k",
+"wx4eqd9q",
+"wx4eqdc2",
+"wx4eqd9r",
+"wx4eq99w",
+"wx4eq99x",
+"wx4eq9c8",
+"wx4eq9c9",
+"wx4eq9cd",
+"wx4eq9ce",
+"wx4eq9cs",
+"wx4eq9ct",
+"wx4eq9cw",
+"wx4eq9cx",
+"wx4eqd18",
+"wx4eqd19",
+"wx4eqd1d",
+"wx4eqd1e",
+"wx4eqd1s",
+"wx4eqd1w",
+"wx4eqd1x",
+"wx4eqd38",
+"wx4eqd39",
+"wx4eqd3d",
+"wx4eqd3e",
+"wx4eqd3s",
+"wx4eqd3t",
+"wx4eqd3w",
+"wx4eqd3x",
+"wx4eqd98",
+"wx4eqd99",
+"wx4eqd9d",
+"wx4eqd9e",
+"wx4eqd9s",
+"wx4eqd9t",
+"wx4eqd9w",
+"wx4eqdc8",
+"wx4eqd9x",
+"wx4eqdc9",
+"wx4eq99y",
+"wx4eq99z",
+"wx4eq9cb",
+"wx4eq9cc",
+"wx4eq9cg",
+"wx4eqd1t",
+"wx4eq9cu",
+"wx4eq9cv",
+"wx4eq9cy",
+"wx4eq9cz",
+"wx4eqd1b",
+"wx4eqd1c",
+"wx4eqd1f",
+"wx4eqd1g",
+"wx4eq9cf",
+"wx4eqd1u",
+"wx4eqd1v",
+"wx4eqd1z",
+"wx4eqd3b",
+"wx4eqd3c",
+"wx4eqd3f",
+"wx4eqd1y",
+"wx4eqd3g",
+"wx4eqd3v",
+"wx4eqd3y",
+"wx4eqd3u",
+"wx4eqd3z",
+"wx4eqd9b",
+"wx4eqd9c",
+"wx4eqd9f",
+"wx4eqd9g",
+"wx4eqd9u",
+"wx4eqd9v",
+"wx4eqd9z",
+"wx4eqdcb",
+"wx4eqdcc",
+"wx4eqdcf",
+"wx4eq9dn",
+"wx4eq9dp",
+"wx4eq9f0",
+"wx4eq9f4",
+"wx4eq9f5",
+"wx4eqd9y",
+"wx4eq9fh",
+"wx4eq9fj",
+"wx4eq9fn",
+"wx4eq9f1",
+"wx4eqd40",
+"wx4eqd41",
+"wx4eqd44",
+"wx4eqd45",
+"wx4eq9fp",
+"wx4eqd4h",
+"wx4eqd4j",
+"wx4eqd4n",
+"wx4eqd4p",
+"wx4eqd61",
+"wx4eqd64",
+"wx4eqd65",
+"wx4eqd6h",
+"wx4eqd6j",
+"wx4eqd6n",
+"wx4eqd6p",
+"wx4eqdd0",
+"wx4eqdd1",
+"wx4eqdd4",
+"wx4eqdd5",
+"wx4eqddh",
+"wx4eqddj",
+"wx4eqddn",
+"wx4eqddp",
+"wx4eqdf0",
+"wx4eqdf1",
+"wx4eqdf4",
+"wx4eqdf5",
+"wx4eq9dr",
+"wx4eq9dq",
+"wx4eq9f2",
+"wx4eq9f6",
+"wx4eq9f3",
+"wx4eqd60",
+"wx4eq9fm",
+"wx4eq9f7",
+"wx4eq9fk",
+"wx4eq9fq",
+"wx4eq9fr",
+"wx4eqd43",
+"wx4eqd46",
+"wx4eqd47",
+"wx4eqd4k",
+"wx4eqd4m",
+"wx4eqd4q",
+"wx4eqd4r",
+"wx4eqd62",
+"wx4eqd63",
+"wx4eqd66",
+"wx4eqd67",
+"wx4eqd6k",
+"wx4eqd6m",
+"wx4eqd6q",
+"wx4eqd6r",
+"wx4eqdd2",
+"wx4eqdd3",
+"wx4eqdd6",
+"wx4eqdd7",
+"wx4eqddk",
+"wx4eqddm",
+"wx4eqddq",
+"wx4eqddr",
+"wx4eqdf2",
+"wx4eqdf3",
+"wx4eqd42",
+"wx4eqdf6",
+"wx4eq9dw",
+"wx4eqdf7",
+"wx4eq9dx",
+"wx4eq9f8",
+"wx4eq9f9",
+"wx4eq9fd",
+"wx4eq9fe",
+"wx4eq9ft",
+"wx4eq9fw",
+"wx4eq9fx",
+"wx4eqd48",
+"wx4eqd49",
+"wx4eqd4d",
+"wx4eqd4e",
+"wx4eqd4s",
+"wx4eqd4t",
+"wx4eqd4w",
+"wx4eqd4x",
+"wx4eqd68",
+"wx4eqd69",
+"wx4eqd6d",
+"wx4eqd6e",
+"wx4eqd6s",
+"wx4eqd6t",
+"wx4eq9fs",
+"wx4eqd6w",
+"wx4eqdd8",
+"wx4eqdd9",
+"wx4eqddd",
+"wx4eqdde",
+"wx4eqd6x",
+"wx4eqddt",
+"wx4eqddw",
+"wx4eqddx",
+"wx4eqdf8",
+"wx4eqdf9",
+"wx4eqdfd",
+"wx4eqdfe",
+"wx4eqdfs",
+"wx4eqdds",
+"wx4eq9dy",
+"wx4eq9fb",
+"wx4eq9fc",
+"wx4eq9ff",
+"wx4eq9dz",
+"wx4eq9fg",
+"wx4eq9fu",
+"wx4eq9fv",
+"wx4eq9fz",
+"wx4eq9fy",
+"wx4eqd4b",
+"wx4eqd4f",
+"wx4eqd4c",
+"wx4eqd4g",
+"wx4eqd4u",
+"wx4eqd4v",
+"wx4eqd4y",
+"wx4eqd4z",
+"wx4eqd6b",
+"wx4eqd6c",
+"wx4eqd6f",
+"wx4eqd6g",
+"wx4eqd6u",
+"wx4eqd6v",
+"wx4eqd6y",
+"wx4eqd6z",
+"wx4eqddb",
+"wx4eqddc",
+"wx4eqddg",
+"wx4eqddu",
+"wx4eqddy",
+"wx4eqddz",
+"wx4eqdfb",
+"wx4eqdfc",
+"wx4eqdff",
+"wx4eqdfg",
+"wx4eqdfu",
+"wx4eqdfv",
+"wx4eq9en",
+"wx4eq9ep",
+"wx4eq9g0",
+"wx4eq9g1",
+"wx4eq9g4",
+"wx4eq9g5",
+"wx4eq9gh",
+"wx4eq9gj",
+"wx4eq9gn",
+"wx4eq9gp",
+"wx4eqd50",
+"wx4eqd51",
+"wx4eqd54",
+"wx4eqd55",
+"wx4eqd5h",
+"wx4eqd5j",
+"wx4eqd5n",
+"wx4eqd5p",
+"wx4eqddf",
+"wx4eqd70",
+"wx4eqd71",
+"wx4eqd74",
+"wx4eqd75",
+"wx4eqd7h",
+"wx4eqd7j",
+"wx4eqd7n",
+"wx4eqd7p",
+"wx4eqde0",
+"wx4eqde4",
+"wx4eqde1",
+"wx4eqde5",
+"wx4eqdeh",
+"wx4eqden",
+"wx4eqdep",
+"wx4eqdg0",
+"wx4eqdg1",
+"wx4eqdg4",
+"wx4eqdg5",
+"wx4eqdgh",
+"wx4eqdgj",
+"wx4eqdej",
+"wx4eqdgn",
+"wx4eq9eq",
+"wx4eq9er",
+"wx4eqddv",
+"wx4eq9g3",
+"wx4eq9g6",
+"wx4eq9g2",
+"wx4eq9g7",
+"wx4eq9gm",
+"wx4eq9gq",
+"wx4eq9gr",
+"wx4eqd52",
+"wx4eqd53",
+"wx4eqd56",
+"wx4eqd57",
+"wx4eqd5k",
+"wx4eqd5m",
+"wx4eqd5q",
+"wx4eqd5r",
+"wx4eqd72",
+"wx4eqd73",
+"wx4eqd76",
+"wx4eqd77",
+"wx4eqd7k",
+"wx4eqd7m",
+"wx4eqd7q",
+"wx4eqde2",
+"wx4eqd7r",
+"wx4eqde3",
+"wx4eqde7",
+"wx4eq9gk",
+"wx4eqdek",
+"wx4eqdem",
+"wx4eqdeq",
+"wx4eqder",
+"wx4eqdg2",
+"wx4eqdg3",
+"wx4eqdg6",
+"wx4eqdgk",
+"wx4eqdg7",
+"wx4eqdgm",
+"wx4eqdgq",
+"wx4eq9ew",
+"wx4eq9ex",
+"wx4eq9g8",
+"wx4eq9g9",
+"wx4eq9gd",
+"wx4eq9gs",
+"wx4eq9ge",
+"wx4eq9gt",
+"wx4eq9gw",
+"wx4eq9gx",
+"wx4eqd58",
+"wx4eqd5d",
+"wx4eqd59",
+"wx4eqd5e",
+"wx4eqd5s",
+"wx4eqd5t",
+"wx4eqd5w",
+"wx4eqd5x",
+"wx4eqd78",
+"wx4eqd79",
+"wx4eqd7e",
+"wx4eqd7d",
+"wx4eqd7s",
+"wx4eqd7w",
+"wx4eqd7t",
+"wx4eqd7x",
+"wx4eqde9",
+"wx4eqde8",
+"wx4eqded",
+"wx4eqdes",
+"wx4eqdee",
+"wx4eqdet",
+"wx4eqdew",
+"wx4eqdex",
+"wx4eqdg8",
+"wx4eqdg9",
+"wx4eqdgd",
+"wx4eqdge",
+"wx4eqdgs",
+"wx4eqdgt",
+"wx4eqdgw",
+"wx4eqdgx",
+"wx4eq9ey",
+"wx4eq9ez",
+"wx4eq9gc",
+"wx4eq9gf",
+"wx4eq9gg",
+"wx4eq9gu",
+"wx4eq9gv",
+"wx4eq9gy",
+"wx4eq9gz",
+"wx4eqd5b",
+"wx4eqd5c",
+"wx4eqd5f",
+"wx4eqd5g",
+"wx4eqd5u",
+"wx4eqd5v",
+"wx4eqd5y",
+"wx4eqd5z",
+"wx4eqd7b",
+"wx4eqd7c",
+"wx4eqd7f",
+"wx4eqd7g",
+"wx4eqd7u",
+"wx4eqd7v",
+"wx4eqd7y",
+"wx4eqd7z",
+"wx4eqdeb",
+"wx4eq9gb",
+"wx4eqde6",
+"wx4eqdec",
+"wx4eqdef",
+"wx4eqdeg",
+"wx4eqdeu",
+"wx4eqdey",
+"wx4eqdev",
+"wx4eqdgb",
+"wx4eqdgc",
+"wx4eqdgf",
+"wx4eqdgu",
+"wx4eqdgg",
+"wx4eqdgv",
+"wx4eqdgy",
+"wx4eqdgz",
+"wx4eqdez",
+"wx4eq9sn",
+"wx4eq9sp",
+"wx4eq9u0",
+"wx4eq9u1",
+"wx4eqe5b",
+"wx4eq9u4",
+"wx4eq9uh",
+"wx4eq9u5",
+"wx4eq9un",
+"wx4eq9uj",
+"wx4eq9up",
+"wx4eqdh1",
+"wx4eqdh4",
+"wx4eqdh5",
+"wx4eqdhh",
+"wx4eqdhj",
+"wx4eqdhn",
+"wx4eqdhp",
+"wx4eqdh0",
+"wx4eqdk0",
+"wx4eqdk1",
+"wx4eqdk4",
+"wx4eqdkh",
+"wx4eqdkj",
+"wx4eqdk5",
+"wx4eqdkn",
+"wx4eqdkp",
+"wx4eqds1",
+"wx4eqds4",
+"wx4eqds5",
+"wx4eqdsh",
+"wx4eqdsj",
+"wx4eqdsn",
+"wx4eqds0",
+"wx4eqdsp",
+"wx4eqdu1",
+"wx4eqdu4",
+"wx4eqdu5",
+"wx4eqduh",
+"wx4eqdu0",
+"wx4eqdun",
+"wx4eqdup",
+"wx4eqeh0",
+"wx4eqduj",
+"wx4eq9sq",
+"wx4eqeh1",
+"wx4eq9sr",
+"wx4eq9u3",
+"wx4eq9u6",
+"wx4eq9u7",
+"wx4eq9um",
+"wx4eq9u2",
+"wx4eq9uq",
+"wx4eq9ur",
+"wx4eqdh2",
+"wx4eq9uk",
+"wx4eqdh6",
+"wx4eqdh7",
+"wx4eqdhk",
+"wx4eqdhm",
+"wx4eqdhq",
+"wx4eqdhr",
+"wx4eqdk2",
+"wx4eqdk3",
+"wx4eqdk6",
+"wx4eqdh3",
+"wx4eqdkk",
+"wx4eqdk7",
+"wx4eqdkq",
+"wx4eqdkr",
+"wx4eqdkm",
+"wx4eqds2",
+"wx4eqds6",
+"wx4eqds7",
+"wx4eqdsk",
+"wx4eqdsm",
+"wx4eqdsq",
+"wx4eqdsr",
+"wx4eqdu2",
+"wx4eqdu3",
+"wx4eqdu6",
+"wx4eqdu7",
+"wx4eqduk",
+"wx4eqdum",
+"wx4eqduq",
+"wx4eqdur",
+"wx4eqeh2",
+"wx4eqeh3",
+"wx4eq9sw",
+"wx4eq9sx",
+"wx4eq9u8",
+"wx4eq9u9",
+"wx4eq9ud",
+"wx4eq9ue",
+"wx4eq9us",
+"wx4eq9ut",
+"wx4eq9uw",
+"wx4eq9ux",
+"wx4eqdh8",
+"wx4eqdh9",
+"wx4eqdhd",
+"wx4eqdhe",
+"wx4eqdhs",
+"wx4eqdht",
+"wx4eqdhw",
+"wx4eqdhx",
+"wx4eqdk8",
+"wx4eqdk9",
+"wx4eqdkd",
+"wx4eqdke",
+"wx4eqdks",
+"wx4eqds3",
+"wx4eqdkt",
+"wx4eqdkx",
+"wx4eqds8",
+"wx4eqds9",
+"wx4eqdsd",
+"wx4eqdss",
+"wx4eqdse",
+"wx4eqdst",
+"wx4eqdsw",
+"wx4eqdkw",
+"wx4eqdu8",
+"wx4eqdu9",
+"wx4eqdud",
+"wx4eqdue",
+"wx4eqdus",
+"wx4eqdut",
+"wx4eqduw",
+"wx4eqdux",
+"wx4eqeh8",
+"wx4eqdsx",
+"wx4eqeh9",
+"wx4eqehd",
+"wx4eq9sz",
+"wx4eq9uc",
+"wx4eq9sy",
+"wx4eq9uf",
+"wx4eq9ug",
+"wx4eq9ub",
+"wx4eq9uu",
+"wx4eq9uv",
+"wx4eq9uy",
+"wx4eqdhb",
+"wx4eqdhc",
+"wx4eqdhf",
+"wx4eqdhg",
+"wx4eqdhu",
+"wx4eqdhv",
+"wx4eqdhz",
+"wx4eqdhy",
+"wx4eqdkb",
+"wx4eqdkc",
+"wx4eqdkf",
+"wx4eqdkg",
+"wx4eqdku",
+"wx4eqdkv",
+"wx4eqdky",
+"wx4eqdkz",
+"wx4eqdsb",
+"wx4eqdsc",
+"wx4eqdsf",
+"wx4eqdsg",
+"wx4eqdsu",
+"wx4eqdsv",
+"wx4eqdsy",
+"wx4eqdsz",
+"wx4eq9uz",
+"wx4eqdub",
+"wx4eqduf",
+"wx4eqduc",
+"wx4eqduv",
+"wx4eqduy",
+"wx4eqduz",
+"wx4eqehb",
+"wx4eqehc",
+"wx4eqehf",
+"wx4eqehg",
+"wx4eq9tn",
+"wx4eq9tp",
+"wx4eq9v0",
+"wx4eq9v1",
+"wx4eq9v4",
+"wx4eq9v5",
+"wx4eq9vh",
+"wx4eq9vj",
+"wx4eq9vn",
+"wx4eq9vp",
+"wx4eqdj0",
+"wx4eqdj1",
+"wx4eqdj4",
+"wx4eqdj5",
+"wx4eqdjh",
+"wx4eqdug",
+"wx4eqdjj",
+"wx4eqdjn",
+"wx4eqdjp",
+"wx4eqdm0",
+"wx4eqdm1",
+"wx4eqdm4",
+"wx4eqdm5",
+"wx4eqdmh",
+"wx4eqdmj",
+"wx4eqdmn",
+"wx4eqdmp",
+"wx4eqdt0",
+"wx4eqdt1",
+"wx4eqdt4",
+"wx4eqdt5",
+"wx4eqdth",
+"wx4eqdtj",
+"wx4eqdtn",
+"wx4eqdtp",
+"wx4eqdv0",
+"wx4eqdv1",
+"wx4eqdv4",
+"wx4eqdv5",
+"wx4eqdvh",
+"wx4eqdvj",
+"wx4eqdvn",
+"wx4eqdvp",
+"wx4eqej0",
+"wx4eqej1",
+"wx4eqej4",
+"wx4eqej5",
+"wx4eqejh",
+"wx4eq9tq",
+"wx4eq9tr",
+"wx4eq9v2",
+"wx4eq9v3",
+"wx4eq9v6",
+"wx4eq9vk",
+"wx4eq9v7",
+"wx4eqduu",
+"wx4eq9vm",
+"wx4eq9vr",
+"wx4eq9vq",
+"wx4eqdj2",
+"wx4eqdj3",
+"wx4eqdj7",
+"wx4eqdj6",
+"wx4eqdjm",
+"wx4eqdjr",
+"wx4eqdjq",
+"wx4eqdm2",
+"wx4eqdm6",
+"wx4eqdm3",
+"wx4eqdm7",
+"wx4eqdmk",
+"wx4eqdmm",
+"wx4eqdmq",
+"wx4eqdmr",
+"wx4eqdt2",
+"wx4eqdt3",
+"wx4eqdt6",
+"wx4eqdt7",
+"wx4eqdtk",
+"wx4eqdtq",
+"wx4eqdtm",
+"wx4eqdtr",
+"wx4eqdv3",
+"wx4eqdv2",
+"wx4eqdv6",
+"wx4eqdvk",
+"wx4eqdv7",
+"wx4eqdvm",
+"wx4eqdvr",
+"wx4eqdvq",
+"wx4eqej2",
+"wx4eqej6",
+"wx4eqej3",
+"wx4eqej7",
+"wx4eqejk",
+"wx4eq9tw",
+"wx4eqdjk",
+"wx4eq9tx",
+"wx4eq9v9",
+"wx4eq9vd",
+"wx4eq9ve",
+"wx4eq9vs",
+"wx4eq9vt",
+"wx4eq9vw",
+"wx4eq9vx",
+"wx4eqdj8",
+"wx4eqdj9",
+"wx4eqdjd",
+"wx4eqdje",
+"wx4eqdjs",
+"wx4eqdjt",
+"wx4eqdjw",
+"wx4eqdjx",
+"wx4eqdm8",
+"wx4eqdm9",
+"wx4eqdmd",
+"wx4eqdme",
+"wx4eqdms",
+"wx4eqdmt",
+"wx4eq9v8",
+"wx4eqdmx",
+"wx4eqdt8",
+"wx4eqdt9",
+"wx4eqdtd",
+"wx4eqdte",
+"wx4eqdts",
+"wx4eqdtt",
+"wx4eqdtw",
+"wx4eqdtx",
+"wx4eqdv8",
+"wx4eqdv9",
+"wx4eqdvd",
+"wx4eqdve",
+"wx4eqdmw",
+"wx4eqdvt",
+"wx4eqdvs",
+"wx4eqdvx",
+"wx4eqej8",
+"wx4eqej9",
+"wx4eqejd",
+"wx4eqeje",
+"wx4eqejs",
+"wx4eqejt",
+"wx4eq9ty",
+"wx4eq9tz",
+"wx4eq9vb",
+"wx4eq9vc",
+"wx4eq9vf",
+"wx4eq9vg",
+"wx4eq9vu",
+"wx4eq9vv",
+"wx4eq9vy",
+"wx4eq9vz",
+"wx4eqdjb",
+"wx4eqdjc",
+"wx4eqdjf",
+"wx4eqdjg",
+"wx4eqdju",
+"wx4eqdvw",
+"wx4eqdjv",
+"wx4eqdjy",
+"wx4eqdjz",
+"wx4eqdmb",
+"wx4eqdmc",
+"wx4eqdmf",
+"wx4eqdmg",
+"wx4eqdmu",
+"wx4eqdmv",
+"wx4eqdmy",
+"wx4eqdmz",
+"wx4eqdtb",
+"wx4eqdtc",
+"wx4eqdtf",
+"wx4eqdtg",
+"wx4eqdtu",
+"wx4eqdtv",
+"wx4eqdty",
+"wx4eqdtz",
+"wx4eqdvb",
+"wx4eqdvc",
+"wx4eqdvf",
+"wx4eqdvg",
+"wx4eqdvu",
+"wx4eqdvv",
+"wx4eqdvy",
+"wx4eqdvz",
+"wx4eqejb",
+"wx4eqejc",
+"wx4eqejf",
+"wx4eqejg",
+"wx4eqeju",
+"wx4eqejv",
+"wx4eqejy",
+"wx4eq9wn",
+"wx4eq9wp",
+"wx4eq9y0",
+"wx4eq9y1",
+"wx4eq9y4",
+"wx4eq9y5",
+"wx4eq9yh",
+"wx4eq9yj",
+"wx4eq9yn",
+"wx4eq9yp",
+"wx4eqdn0",
+"wx4eqdn1",
+"wx4eqdn4",
+"wx4eqdn5",
+"wx4eqdnh",
+"wx4eqdnj",
+"wx4eqdnn",
+"wx4eqdnp",
+"wx4eqdq0",
+"wx4eqdq1",
+"wx4eqdq4",
+"wx4eqdq5",
+"wx4eqdqh",
+"wx4eqdqj",
+"wx4eqdqn",
+"wx4eqdqp",
+"wx4eqdw0",
+"wx4eqdw1",
+"wx4eqdw4",
+"wx4eqdw5",
+"wx4eqdwh",
+"wx4eqdwj",
+"wx4eqdwn",
+"wx4eqdwp",
+"wx4eqdy0",
+"wx4eqdy1",
+"wx4eqdy4",
+"wx4eqdy5",
+"wx4eqdyh",
+"wx4eqdyj",
+"wx4eqdyn",
+"wx4eqdyp",
+"wx4eqen0",
+"wx4eqen1",
+"wx4eqen4",
+"wx4eqen5",
+"wx4eqenh",
+"wx4eqenj",
+"wx4eqenn",
+"wx4eq9wq",
+"wx4eq9wr",
+"wx4eq9y2",
+"wx4eq9y3",
+"wx4eq9y6",
+"wx4eq9y7",
+"wx4eq9yk",
+"wx4eq9ym",
+"wx4eq9yq",
+"wx4eq9yr",
+"wx4eqdn2",
+"wx4eqdn3",
+"wx4eqdn6",
+"wx4eqdn7",
+"wx4eqdnk",
+"wx4eqdnm",
+"wx4eqdnq",
+"wx4eqdnr",
+"wx4eqdq2",
+"wx4eqdq3",
+"wx4eqdq6",
+"wx4eqdq7",
+"wx4eqdqk",
+"wx4eqdqm",
+"wx4eqdqq",
+"wx4eqdqr",
+"wx4eqdw2",
+"wx4eqdw3",
+"wx4eqdw6",
+"wx4eqdw7",
+"wx4eqdwk",
+"wx4eqdwm",
+"wx4eqdwq",
+"wx4eqdwr",
+"wx4eqdy6",
+"wx4eqdy3",
+"wx4eqdy2",
+"wx4eqdy7",
+"wx4eqdym",
+"wx4eqdyk",
+"wx4eqdyr",
+"wx4eqen2",
+"wx4eqen3",
+"wx4eqdyq",
+"wx4eqen6",
+"wx4eqen7",
+"wx4eqenm",
+"wx4eqenk",
+"wx4eqenq",
+"wx4eqenr",
+"wx4eq9ww",
+"wx4eq9wx",
+"wx4eq9y8",
+"wx4eq9y9",
+"wx4eq9yd",
+"wx4eq9ye",
+"wx4eq9ys",
+"wx4eq9yt",
+"wx4eq9yw",
+"wx4eq9yx",
+"wx4eqdn8",
+"wx4eqdn9",
+"wx4eqdnd",
+"wx4eqdne",
+"wx4eqdns",
+"wx4eqdnt",
+"wx4eqdnx",
+"wx4eqdnw",
+"wx4eqdq8",
+"wx4eqdq9",
+"wx4eqdqe",
+"wx4eqdqd",
+"wx4eqdqx",
+"wx4eqdqs",
+"wx4eqdqt",
+"wx4eqdqw",
+"wx4eqdwd",
+"wx4eqdw9",
+"wx4eqdwe",
+"wx4eqdws",
+"wx4eqdwt",
+"wx4eqdww",
+"wx4eqdwx",
+"wx4eqdy8",
+"wx4eqdy9",
+"wx4eqdw8",
+"wx4eqdyd",
+"wx4eqdys",
+"wx4eqdyw",
+"wx4eqdye",
+"wx4eqdyx",
+"wx4eqdyt",
+"wx4eqen8",
+"wx4eqend",
+"wx4eqen9",
+"wx4eqens",
+"wx4eqent",
+"wx4eqenw",
+"wx4eqenx",
+"wx4eqeq8",
+"wx4eq9wy",
+"wx4eqene",
+"wx4eq9wz",
+"wx4eq9yb",
+"wx4eq9yg",
+"wx4eq9yu",
+"wx4eq9yc",
+"wx4eq9yv",
+"wx4eq9yy",
+"wx4eq9yz",
+"wx4eq9yf",
+"wx4eqdnb",
+"wx4eqdnc",
+"wx4eqdnf",
+"wx4eqdng",
+"wx4eqdnu",
+"wx4eqdnv",
+"wx4eqdny",
+"wx4eqdnz",
+"wx4eqdqb",
+"wx4eqdqc",
+"wx4eqdqf",
+"wx4eqdqu",
+"wx4eqdqg",
+"wx4eqdqv",
+"wx4eqdqy",
+"wx4eqdqz",
+"wx4eqdwb",
+"wx4eqdwc",
+"wx4eqdwf",
+"wx4eqdwg",
+"wx4eqdwu",
+"wx4eqdwv",
+"wx4eqdwy",
+"wx4eqdwz",
+"wx4eqdyb",
+"wx4eqdyc",
+"wx4eqdyf",
+"wx4eqdyg",
+"wx4eqdyu",
+"wx4eqdyv",
+"wx4eqdyy",
+"wx4eqdyz",
+"wx4eqenb",
+"wx4eqenc",
+"wx4eqenf",
+"wx4eqeng",
+"wx4eqenu",
+"wx4eqenv",
+"wx4eqeny",
+"wx4eqenz",
+"wx4eqeqb",
+"wx4eq9xn",
+"wx4eq9xp",
+"wx4eq9z0",
+"wx4eq9z1",
+"wx4eq9z4",
+"wx4eq9z5",
+"wx4eq9zh",
+"wx4eq9zj",
+"wx4eq9zn",
+"wx4eq9zp",
+"wx4eqdp0",
+"wx4eqdp1",
+"wx4eqdp4",
+"wx4eqdp5",
+"wx4eqdph",
+"wx4eqdpj",
+"wx4eqdpn",
+"wx4eqdpp",
+"wx4eqdr0",
+"wx4eqdr1",
+"wx4eqdr4",
+"wx4eqdr5",
+"wx4eqdrh",
+"wx4eqdrj",
+"wx4eqdrn",
+"wx4eqdrp",
+"wx4eqdx0",
+"wx4eqdx1",
+"wx4eqdx4",
+"wx4eqdx5",
+"wx4eqdxh",
+"wx4eqdxj",
+"wx4eqdxn",
+"wx4eqdxp",
+"wx4eqdz0",
+"wx4eqdz1",
+"wx4eqdz4",
+"wx4eqdz5",
+"wx4eqdzh",
+"wx4eqdzj",
+"wx4eqdzn",
+"wx4eqdzp",
+"wx4eqep0",
+"wx4eqep1",
+"wx4eqep4",
+"wx4eqep5",
+"wx4eqeph",
+"wx4eqepj",
+"wx4eqepn",
+"wx4eqepp",
+"wx4eqer0",
+"wx4eqer1",
+"wx4eq9xq",
+"wx4eq9xr",
+"wx4eq9z2",
+"wx4eq9z3",
+"wx4eq9z6",
+"wx4eq9z7",
+"wx4eq9zk",
+"wx4eq9zm",
+"wx4eq9zq",
+"wx4eq9zr",
+"wx4eqdp2",
+"wx4eqdp3",
+"wx4eqdp6",
+"wx4eqdp7",
+"wx4eqdpk",
+"wx4eqdpm",
+"wx4eqdpq",
+"wx4eqdpr",
+"wx4eqdr2",
+"wx4eqdr3",
+"wx4eqdr6",
+"wx4eqdr7",
+"wx4eqdrk",
+"wx4eqdrm",
+"wx4eqdrq",
+"wx4eqdrr",
+"wx4eqdx2",
+"wx4eqdx3",
+"wx4eqdx6",
+"wx4eqdx7",
+"wx4eqdxk",
+"wx4eqdxm",
+"wx4eqdxq",
+"wx4eqdxr",
+"wx4eqdz2",
+"wx4eqdz3",
+"wx4eqdz6",
+"wx4eqdz7",
+"wx4eqdzk",
+"wx4eqdzm",
+"wx4eqdzq",
+"wx4eqdzr",
+"wx4eqep2",
+"wx4eqep3",
+"wx4eqep6",
+"wx4eqep7",
+"wx4eqepk",
+"wx4eqepm",
+"wx4eqepq",
+"wx4eqepr",
+"wx4eqer2",
+"wx4eqer3",
+"wx4eqer6",
+"wx4eq9xw",
+"wx4eq9xx",
+"wx4eq9z8",
+"wx4eq9z9",
+"wx4eq9zd",
+"wx4eq9ze",
+"wx4eq9zs",
+"wx4eq9zt",
+"wx4eq9zw",
+"wx4eq9zx",
+"wx4eqdp8",
+"wx4eqdp9",
+"wx4eqdpd",
+"wx4eqdpe",
+"wx4eqdps",
+"wx4eqdpt",
+"wx4eqdpw",
+"wx4eqdpx",
+"wx4eqdr8",
+"wx4eqdr9",
+"wx4eqdrd",
+"wx4eqdre",
+"wx4eqdrs",
+"wx4eqdrt",
+"wx4eqdrw",
+"wx4eqdrx",
+"wx4eqdx8",
+"wx4eqdx9",
+"wx4eqdxd",
+"wx4eqdxe",
+"wx4eqdxs",
+"wx4eqdxt",
+"wx4eqdxw",
+"wx4eqdxx",
+"wx4eqdz8",
+"wx4eqdz9",
+"wx4eqdzd",
+"wx4eqdze",
+"wx4eqdzs",
+"wx4eqdzt",
+"wx4eqdzw",
+"wx4eqdzx",
+"wx4eqep8",
+"wx4eqep9",
+"wx4eqepd",
+"wx4eqepe",
+"wx4eqeps",
+"wx4eqept",
+"wx4eqepw",
+"wx4eqepx",
+"wx4eqer8",
+"wx4eqer9",
+"wx4eqerd",
+"wx4eq9xy",
+"wx4eq9xz",
+"wx4eq9zb",
+"wx4eq9zc",
+"wx4eq9zf",
+"wx4eq9zg",
+"wx4eq9zu",
+"wx4eq9zv",
+"wx4eq9zy",
+"wx4eq9zz",
+"wx4eqdpb",
+"wx4eqdpc",
+"wx4eqdpf",
+"wx4eqdpg",
+"wx4eqdpu",
+"wx4eqdpv",
+"wx4eqdpy",
+"wx4eqdpz",
+"wx4eqdrc",
+"wx4eqdrf",
+"wx4eqdrb",
+"wx4eqdrg",
+"wx4eqdru",
+"wx4eqdrv",
+"wx4eqdry",
+"wx4eqdrz",
+"wx4eqdxb",
+"wx4eqdxc",
+"wx4eqdxf",
+"wx4eqdxg",
+"wx4eqdxu",
+"wx4eqdxy",
+"wx4eqdxv",
+"wx4eqdxz",
+"wx4eqdzb",
+"wx4eqdzf",
+"wx4eqdzc",
+"wx4eqdzg",
+"wx4eqdzu",
+"wx4eqdzv",
+"wx4eqdzy",
+"wx4eqdzz",
+"wx4eqepb",
+"wx4eqepf",
+"wx4eqepc",
+"wx4eqepu",
+"wx4eqepg",
+"wx4eqepv",
+"wx4eqepy",
+"wx4eqepz",
+"wx4eqerb",
+"wx4eqerf",
+"wx4eqerc",
+"wx4eqerg",
+"wx4eqc8n",
+"wx4eqcb0",
+"wx4eqc8p",
+"wx4eqcb1",
+"wx4eqcb4",
+"wx4eqcb5",
+"wx4eqcbh",
+"wx4eqcbn",
+"wx4eqcbj",
+"wx4eqcbp",
+"wx4eqf00",
+"wx4eqf01",
+"wx4eqf04",
+"wx4eqf05",
+"wx4eqf0h",
+"wx4eqf0n",
+"wx4eqf0j",
+"wx4eqf0p",
+"wx4eqf20",
+"wx4eqf21",
+"wx4eqf24",
+"wx4eqf2h",
+"wx4eqf25",
+"wx4eqf2j",
+"wx4eqf2n",
+"wx4eqf80",
+"wx4eqf2p",
+"wx4eqf81",
+"wx4eqf84",
+"wx4eqf85",
+"wx4eqf8h",
+"wx4eqf8n",
+"wx4eqf8j",
+"wx4eqf8p",
+"wx4eqfb0",
+"wx4eqfb1",
+"wx4eqfb4",
+"wx4eqfbh",
+"wx4eqfb5",
+"wx4eqfbn",
+"wx4eqfbj",
+"wx4eqfbp",
+"wx4eqg00",
+"wx4eqg01",
+"wx4eqg04",
+"wx4eqg0h",
+"wx4eqg05",
+"wx4eqg0n",
+"wx4eqg0j",
+"wx4eqg0p",
+"wx4eqg20",
+"wx4eqg24",
+"wx4eqg21",
+"wx4eqg25",
+"wx4eqg2h",
+"wx4eqc8q",
+"wx4eqc8r",
+"wx4eqcb2",
+"wx4eqcb3",
+"wx4eqcb6",
+"wx4eqcb7",
+"wx4eqcbm",
+"wx4eqcbk",
+"wx4eqcbq",
+"wx4eqcbr",
+"wx4eqf02",
+"wx4eqf03",
+"wx4eqf06",
+"wx4eqf07",
+"wx4eqf0m",
+"wx4eqf0k",
+"wx4eqf0q",
+"wx4eqf0r",
+"wx4eqf22",
+"wx4eqf23",
+"wx4eqf26",
+"wx4eqf27",
+"wx4eqf2k",
+"wx4eqf2m",
+"wx4eqf2r",
+"wx4eqf2q",
+"wx4eqf83",
+"wx4eqf82",
+"wx4eqf87",
+"wx4eqf86",
+"wx4eqf8k",
+"wx4eqf8m",
+"wx4eqf8q",
+"wx4eqf8r",
+"wx4eqfb2",
+"wx4eqfb3",
+"wx4eqfb7",
+"wx4eqfb6",
+"wx4eqfbk",
+"wx4eqfbm",
+"wx4eqfbq",
+"wx4eqfbr",
+"wx4eqg02",
+"wx4eqg03",
+"wx4eqg06",
+"wx4eqg07",
+"wx4eqg0k",
+"wx4eqg0m",
+"wx4eqg0q",
+"wx4eqg0r",
+"wx4eqg22",
+"wx4eqg23",
+"wx4eqg27",
+"wx4eqg26",
+"wx4eqc8w",
+"wx4eqg2k",
+"wx4eqcb8",
+"wx4eqc8x",
+"wx4eqcb9",
+"wx4eqcbd",
+"wx4eqcbe",
+"wx4eqcbs",
+"wx4eqcbt",
+"wx4eqcbw",
+"wx4eqf08",
+"wx4eqcbx",
+"wx4eqf0d",
+"wx4eqf09",
+"wx4eqf0e",
+"wx4eqf0s",
+"wx4eqf0t",
+"wx4eqf0w",
+"wx4eqf28",
+"wx4eqf0x",
+"wx4eqf29",
+"wx4eqf2d",
+"wx4eqf2e",
+"wx4eqf2s",
+"wx4eqf2t",
+"wx4eqf2w",
+"wx4eqf2x",
+"wx4eqf88",
+"wx4eqf8d",
+"wx4eqf89",
+"wx4eqf8e",
+"wx4eqf8s",
+"wx4eqf8w",
+"wx4eqf8t",
+"wx4eqf8x",
+"wx4eqfb8",
+"wx4eqfb9",
+"wx4eqfbd",
+"wx4eqfbs",
+"wx4eqfbe",
+"wx4eqfbt",
+"wx4eqfbw",
+"wx4eqfbx",
+"wx4eqg08",
+"wx4eqg09",
+"wx4eqg0d",
+"wx4eqg0e",
+"wx4eqg0s",
+"wx4eqg0w",
+"wx4eqg0t",
+"wx4eqg0x",
+"wx4eqg28",
+"wx4eqg2d",
+"wx4eqg29",
+"wx4eqg2e",
+"wx4eqg2s",
+"wx4eqg2t",
+"wx4eqc8y",
+"wx4eqc8z",
+"wx4eqcbb",
+"wx4eqcbc",
+"wx4eqcbf",
+"wx4eqcbg",
+"wx4eqcbu",
+"wx4eqcby",
+"wx4eqcbv",
+"wx4eqcbz",
+"wx4eqf0b",
+"wx4eqf0f",
+"wx4eqf0c",
+"wx4eqf0u",
+"wx4eqf0g",
+"wx4eqf0v",
+"wx4eqf0y",
+"wx4eqf0z",
+"wx4eqf2b",
+"wx4eqf2c",
+"wx4eqf2f",
+"wx4eqf2g",
+"wx4eqf2u",
+"wx4eqf2v",
+"wx4eqf2y",
+"wx4eqf2z",
+"wx4eqf8b",
+"wx4eqf8c",
+"wx4eqf8f",
+"wx4eqf8g",
+"wx4eqf8u",
+"wx4eqf8v",
+"wx4eqf8y",
+"wx4eqf8z",
+"wx4eqfbb",
+"wx4eqfbc",
+"wx4eqfbf",
+"wx4eqfbg",
+"wx4eqfbu",
+"wx4eqfbv",
+"wx4eqfby",
+"wx4eqfbz",
+"wx4eqg0b",
+"wx4eqg0c",
+"wx4eqg0f",
+"wx4eqg0u",
+"wx4eqg0g",
+"wx4eqg0v",
+"wx4eqg0y",
+"wx4eqg0z",
+"wx4eqg2b",
+"wx4eqg2c",
+"wx4eqg2f",
+"wx4eqg2g",
+"wx4eqg2u",
+"wx4eqg2v",
+"wx4eqg2y",
+"wx4eqc9n",
+"wx4eqc9p",
+"wx4eqcc0",
+"wx4eqcc1",
+"wx4eqcc4",
+"wx4eqcc5",
+"wx4eqcch",
+"wx4eqccj",
+"wx4eqccn",
+"wx4eqccp",
+"wx4eqf10",
+"wx4eqf11",
+"wx4eqf15",
+"wx4eqf14",
+"wx4eqf1h",
+"wx4eqf1j",
+"wx4eqf1n",
+"wx4eqf1p",
+"wx4eqf30",
+"wx4eqf31",
+"wx4eqf34",
+"wx4eqf35",
+"wx4eqf3h",
+"wx4eqf3j",
+"wx4eqf3n",
+"wx4eqf3p",
+"wx4eqf91",
+"wx4eqf90",
+"wx4eqf95",
+"wx4eqf94",
+"wx4eqf9h",
+"wx4eqf9j",
+"wx4eqf9n",
+"wx4eqf9p",
+"wx4eqfc0",
+"wx4eqfc1",
+"wx4eqfc4",
+"wx4eqfc5",
+"wx4eqfch",
+"wx4eqfcj",
+"wx4eqfcp",
+"wx4eqfcn",
+"wx4eqg10",
+"wx4eqg11",
+"wx4eqg15",
+"wx4eqg14",
+"wx4eqg1h",
+"wx4eqg1j",
+"wx4eqg1p",
+"wx4eqg1n",
+"wx4eqg31",
+"wx4eqg30",
+"wx4eqg34",
+"wx4eqg35",
+"wx4eqg3h",
+"wx4eqg3j",
+"wx4eqg3n",
+"wx4eqg3p",
+"wx4eqc9q",
+"wx4eqc9r",
+"wx4eqcc2",
+"wx4eqcc3",
+"wx4eqcc6",
+"wx4eqcc7",
+"wx4eqcck",
+"wx4eqccm",
+"wx4eqccq",
+"wx4eqccr",
+"wx4eqf12",
+"wx4eqf13",
+"wx4eqf16",
+"wx4eqf17",
+"wx4eqf1k",
+"wx4eqf1m",
+"wx4eqf1q",
+"wx4eqf1r",
+"wx4eqf32",
+"wx4eqf33",
+"wx4eqf36",
+"wx4eqf37",
+"wx4eqf3m",
+"wx4eqf3k",
+"wx4eqf3q",
+"wx4eqf3r",
+"wx4eqf92",
+"wx4eqf93",
+"wx4eqf96",
+"wx4eqf97",
+"wx4eqf9k",
+"wx4eqf9m",
+"wx4eqf9q",
+"wx4eqf9r",
+"wx4eqfc3",
+"wx4eqfc2",
+"wx4eqfc6",
+"wx4eqfc7",
+"wx4eqfcm",
+"wx4eqfck",
+"wx4eqfcq",
+"wx4eqfcr",
+"wx4eqg13",
+"wx4eqg16",
+"wx4eqg17",
+"wx4eqg1k",
+"wx4eqg1q",
+"wx4eqg1r",
+"wx4eqg32",
+"wx4eqg12",
+"wx4eqg33",
+"wx4eqg36",
+"wx4eqg1m",
+"wx4eqg37",
+"wx4eqg3m",
+"wx4eqg3q",
+"wx4eqg3r",
+"wx4eqc9w",
+"wx4eqc9x",
+"wx4eqcc8",
+"wx4eqcc9",
+"wx4eqccd",
+"wx4eqcce",
+"wx4eqccs",
+"wx4eqcct",
+"wx4eqccw",
+"wx4eqccx",
+"wx4eqf18",
+"wx4eqf19",
+"wx4eqf1d",
+"wx4eqf1e",
+"wx4eqf1s",
+"wx4eqf1t",
+"wx4eqf1w",
+"wx4eqf1x",
+"wx4eqf38",
+"wx4eqg3k",
+"wx4eqf3d",
+"wx4eqf3e",
+"wx4eqf39",
+"wx4eqf3s",
+"wx4eqf3w",
+"wx4eqf3x",
+"wx4eqf98",
+"wx4eqf99",
+"wx4eqf9d",
+"wx4eqf9e",
+"wx4eqf9s",
+"wx4eqf9t",
+"wx4eqf9w",
+"wx4eqf9x",
+"wx4eqfc8",
+"wx4eqfc9",
+"wx4eqfcd",
+"wx4eqfce",
+"wx4eqfcs",
+"wx4eqfct",
+"wx4eqf3t",
+"wx4eqfcw",
+"wx4eqfcx",
+"wx4eqg18",
+"wx4eqg19",
+"wx4eqg1d",
+"wx4eqg1e",
+"wx4eqg1s",
+"wx4eqg1t",
+"wx4eqg1w",
+"wx4eqg1x",
+"wx4eqg38",
+"wx4eqg39",
+"wx4eqg3d",
+"wx4eqg3e",
+"wx4eqg3s",
+"wx4eqg3t",
+"wx4eqg3w",
+"wx4eqg3x",
+"wx4eqg98",
+"wx4eqc9y",
+"wx4eqc9z",
+"wx4eqccb",
+"wx4eqccc",
+"wx4eqccf",
+"wx4eqccg",
+"wx4eqccu",
+"wx4eqccv",
+"wx4eqccy",
+"wx4eqccz",
+"wx4eqf1b",
+"wx4eqf1c",
+"wx4eqf1f",
+"wx4eqf1g",
+"wx4eqf1u",
+"wx4eqf1v",
+"wx4eqf1y",
+"wx4eqf1z",
+"wx4eqf3b",
+"wx4eqf3c",
+"wx4eqf3f",
+"wx4eqf3g",
+"wx4eqf3u",
+"wx4eqf3v",
+"wx4eqf3y",
+"wx4eqf3z",
+"wx4eqf9b",
+"wx4eqf9c",
+"wx4eqf9f",
+"wx4eqf9g",
+"wx4eqf9u",
+"wx4eqf9v",
+"wx4eqf9y",
+"wx4eqf9z",
+"wx4eqfcb",
+"wx4eqfcc",
+"wx4eqfcf",
+"wx4eqfcg",
+"wx4eqfcu",
+"wx4eqfcv",
+"wx4eqfcy",
+"wx4eqfcz",
+"wx4eqg1c",
+"wx4eqg1f",
+"wx4eqg1b",
+"wx4eqg1g",
+"wx4eqg1u",
+"wx4eqg1v",
+"wx4eqg1y",
+"wx4eqg1z",
+"wx4eqg3b",
+"wx4eqg3c",
+"wx4eqg3f",
+"wx4eqg3g",
+"wx4eqg3u",
+"wx4eqg3v",
+"wx4eqg3y",
+"wx4eqg3z",
+"wx4eqg9b",
+"wx4eqg9c",
+"wx4eqcdj",
+"wx4eqcdn",
+"wx4eqcdp",
+"wx4eqcf0",
+"wx4eqcf1",
+"wx4eqcfj",
+"wx4eqcf4",
+"wx4eqcf5",
+"wx4eqcfh",
+"wx4eqf40",
+"wx4eqf41",
+"wx4eqf45",
+"wx4eqf4h",
+"wx4eqcfp",
+"wx4eqcfn",
+"wx4eqf44",
+"wx4eqf60",
+"wx4eqf4p",
+"wx4eqf61",
+"wx4eqf65",
+"wx4eqf6h",
+"wx4eqf6j",
+"wx4eqf6n",
+"wx4eqf6p",
+"wx4eqfd0",
+"wx4eqfd1",
+"wx4eqfd4",
+"wx4eqfd5",
+"wx4eqfdh",
+"wx4eqfdj",
+"wx4eqf64",
+"wx4eqfdn",
+"wx4eqfdp",
+"wx4eqff0",
+"wx4eqff4",
+"wx4eqff5",
+"wx4eqffh",
+"wx4eqffj",
+"wx4eqff1",
+"wx4eqf4n",
+"wx4eqffn",
+"wx4eqf4j",
+"wx4eqffp",
+"wx4eqg41",
+"wx4eqg44",
+"wx4eqg45",
+"wx4eqg4h",
+"wx4eqg4j",
+"wx4eqg4n",
+"wx4eqg4p",
+"wx4eqg60",
+"wx4eqg61",
+"wx4eqg64",
+"wx4eqg65",
+"wx4eqg6h",
+"wx4eqg6j",
+"wx4eqg6n",
+"wx4eqg6p",
+"wx4eqgd0",
+"wx4eqgd1",
+"wx4eqcdm",
+"wx4eqcdq",
+"wx4eqcdr",
+"wx4eqcf2",
+"wx4eqcf3",
+"wx4eqcf6",
+"wx4eqcfm",
+"wx4eqcfq",
+"wx4eqcfr",
+"wx4eqf42",
+"wx4eqf43",
+"wx4eqf46",
+"wx4eqf47",
+"wx4eqf4k",
+"wx4eqf4m",
+"wx4eqf4q",
+"wx4eqf4r",
+"wx4eqf62",
+"wx4eqf63",
+"wx4eqf66",
+"wx4eqf67",
+"wx4eqf6k",
+"wx4eqf6m",
+"wx4eqf6q",
+"wx4eqf6r",
+"wx4eqfd2",
+"wx4eqfd3",
+"wx4eqfd6",
+"wx4eqfd7",
+"wx4eqfdk",
+"wx4eqfdm",
+"wx4eqfdq",
+"wx4eqfdr",
+"wx4eqff2",
+"wx4eqff3",
+"wx4eqff6",
+"wx4eqff7",
+"wx4eqffk",
+"wx4eqffm",
+"wx4eqffq",
+"wx4eqffr",
+"wx4eqg42",
+"wx4eqg43",
+"wx4eqg46",
+"wx4eqg47",
+"wx4eqg4k",
+"wx4eqg4m",
+"wx4eqcfk",
+"wx4eqg40",
+"wx4eqcf7",
+"wx4eqg4q",
+"wx4eqg4r",
+"wx4eqg63",
+"wx4eqg62",
+"wx4eqcdt",
+"wx4eqg6k",
+"wx4eqg67",
+"wx4eqg66",
+"wx4eqcdx",
+"wx4eqcf8",
+"wx4eqcf9",
+"wx4eqcfe",
+"wx4eqcdw",
+"wx4eqcfs",
+"wx4eqcft",
+"wx4eqcfx",
+"wx4eqcfw",
+"wx4eqcfd",
+"wx4eqf48",
+"wx4eqf49",
+"wx4eqf4d",
+"wx4eqf4t",
+"wx4eqf4e",
+"wx4eqf4w",
+"wx4eqf68",
+"wx4eqf69",
+"wx4eqf4x",
+"wx4eqf4s",
+"wx4eqf6e",
+"wx4eqf6d",
+"wx4eqf6s",
+"wx4eqf6t",
+"wx4eqf6w",
+"wx4eqf6x",
+"wx4eqfd9",
+"wx4eqfd8",
+"wx4eqfdd",
+"wx4eqfds",
+"wx4eqfde",
+"wx4eqfdt",
+"wx4eqfdx",
+"wx4eqfdw",
+"wx4eqff8",
+"wx4eqff9",
+"wx4eqffd",
+"wx4eqffe",
+"wx4eqffs",
+"wx4eqfft",
+"wx4eqffw",
+"wx4eqffx",
+"wx4eqg48",
+"wx4eqg4d",
+"wx4eqg49",
+"wx4eqg4e",
+"wx4eqg4s",
+"wx4eqg4t",
+"wx4eqg4w",
+"wx4eqg4x",
+"wx4eqg68",
+"wx4eqcdv",
+"wx4eqcdy",
+"wx4eqcdz",
+"wx4eqcfb",
+"wx4eqcfc",
+"wx4eqcff",
+"wx4eqcfg",
+"wx4eqcfu",
+"wx4eqcfv",
+"wx4eqcfy",
+"wx4eqcfz",
+"wx4eqf4b",
+"wx4eqf4c",
+"wx4eqf4f",
+"wx4eqf4g",
+"wx4eqf4u",
+"wx4eqf4v",
+"wx4eqf4y",
+"wx4eqf4z",
+"wx4eqf6b",
+"wx4eqf6c",
+"wx4eqf6f",
+"wx4eqf6g",
+"wx4eqf6u",
+"wx4eqf6v",
+"wx4eqf6y",
+"wx4eqf6z",
+"wx4eqfdb",
+"wx4eqfdc",
+"wx4eqfdf",
+"wx4eqfdg",
+"wx4eqfdu",
+"wx4eqfdv",
+"wx4eqfdy",
+"wx4eqfdz",
+"wx4eqffb",
+"wx4eqffc",
+"wx4eqfff",
+"wx4eqffg",
+"wx4eqffu",
+"wx4eqffv",
+"wx4eqffy",
+"wx4eqffz",
+"wx4eqg4b",
+"wx4eqg4c",
+"wx4eqg4f",
+"wx4eqcej",
+"wx4eqcen",
+"wx4eqcep",
+"wx4eqcg0",
+"wx4eqcg1",
+"wx4eqcg4",
+"wx4eqcg5",
+"wx4eqcgh",
+"wx4eqcgj",
+"wx4eqcgn",
+"wx4eqcgp",
+"wx4eqf50",
+"wx4eqf51",
+"wx4eqf54",
+"wx4eqf55",
+"wx4eqf5h",
+"wx4eqf5j",
+"wx4eqf5n",
+"wx4eqf5p",
+"wx4eqf70",
+"wx4eqf71",
+"wx4eqf74",
+"wx4eqf75",
+"wx4eqf7h",
+"wx4eqf7j",
+"wx4eqf7n",
+"wx4eqf7p",
+"wx4eqfe0",
+"wx4eqfe1",
+"wx4eqfe4",
+"wx4eqfe5",
+"wx4eqfeh",
+"wx4eqfej",
+"wx4eqfen",
+"wx4eqfep",
+"wx4eqfg0",
+"wx4eqfg1",
+"wx4eqfg4",
+"wx4eqfg5",
+"wx4eqfgh",
+"wx4eqcem",
+"wx4eqceq",
+"wx4eqcer",
+"wx4eqcg2",
+"wx4eqcg3",
+"wx4eqcg6",
+"wx4eqcg7",
+"wx4eqcgk",
+"wx4eqcgm",
+"wx4eqcgq",
+"wx4eqcgr",
+"wx4eqf52",
+"wx4eqf53",
+"wx4eqf56",
+"wx4eqf57",
+"wx4eqf5k",
+"wx4eqf5m",
+"wx4eqf5q",
+"wx4eqf5r",
+"wx4eqf72",
+"wx4eqf73",
+"wx4eqf76",
+"wx4eqcew",
+"wx4eqcex",
+"wx4eqcg8",
+"wx4eqcg9",
+"wx4eqcgd",
+"wx4eqcge",
+"wx4eqcgs",
+
+];
+
+var coords = new Array();
+var coord = new Array();
+var geohash_bound;
+GeohashlowLayer.on('load',function() {
+for(var i=0;i< geohashs.length;i++){
+		coord = decode_geohash(geohashs[i]);
+		geohash_bound = [[coord[2], coord[0]], [coord[3], coord[1]]];
+		// create an orange rectangle
+		L.rectangle(geohash_bound, {color: "orange", weight: 5}).addTo(map);
+	}
+
+		geohash_bound = [
+[39.96103,116.30213],
+[39.9610697810219,116.30223000000001],
+[39.9611095620438,116.30233000000001],
+[39.9612289051095,116.30263000000002],
+[39.9612686861314,116.30273000000003],
+[39.961308467153295,116.30283000000003],
+[39.961388029197096,116.30303000000004],
+[39.96142781021899,116.30313000000004],
+[39.961189124087596,116.30253000000002],
+[39.961507372262794,116.30333000000005],
+[39.96154715328469,116.30343000000005],
+[39.96158693430659,116.30353000000005],
+[39.96162671532849,116.30363000000006],
+[39.9611493430657,116.30243000000002],
+[39.96134824817519,116.30293000000003],
+[39.961706277372286,116.30383000000006],
+[39.96166649635039,116.30373000000006],
+[39.96174605839418,116.30393000000007],
+[39.96146759124089,116.30323000000004],
+[39.961825620437985,116.30413000000007],
+[39.961905182481786,116.30433000000008],
+[39.96186540145988,116.30423000000008],
+[39.96178583941609,116.30403000000007],
+[39.96198474452558,116.30453000000009],
+[39.962024525547484,116.30463000000009],
+[39.96206430656938,116.30473000000009],
+[39.96210408759128,116.3048300000001],
+[39.96212,116.30487],
+[39.962157851662404,116.30497],
+[39.96219570332481,116.30507],
+[39.962233554987215,116.30517],
+[39.96227140664962,116.30527000000001],
+[39.962309258312025,116.30537000000001],
+[39.96234710997443,116.30547000000001],
+[39.962384961636836,116.30557000000002],
+[39.96242281329924,116.30567000000002],
+[39.96246066496165,116.30577000000002],
+[39.96249851662405,116.30587000000003],
+[39.96257421994886,116.30607000000003],
+[39.96261207161127,116.30617000000004],
+[39.96264992327367,116.30627000000004],
+[39.96268777493608,116.30637000000004],
+[39.962725626598484,116.30647000000005],
+[39.96276347826089,116.30657000000005],
+[39.962801329923295,116.30667000000005],
+[39.9628391815857,116.30677000000006],
+[39.962877033248105,116.30687000000006],
+[39.96291488491051,116.30697000000006],
+[39.96194496350368,116.30443000000008],
+[39.96253636828646,116.30597000000003],
+[39.962952736572916,116.30707000000007],
+[39.96299058823532,116.30717000000007],
+[39.96310414322254,116.30747000000008],
+[39.96306629156013,116.30737000000008],
+[39.96317984654735,116.30767000000009],
+[39.96321769820975,116.30777000000009],
+[39.96325554987216,116.3078700000001],
+[39.963293401534564,116.3079700000001],
+[39.96333125319697,116.3080700000001],
+[39.963369104859375,116.3081700000001],
+[39.96340695652178,116.3082700000001],
+[39.963444808184185,116.30837000000011],
+[39.96348265984659,116.30847000000011],
+[39.963520511508996,116.30857000000012],
+[39.9635583631714,116.30867000000012],
+[39.96359621483381,116.30877000000012],
+[39.9636,116.30878],
+[39.96363323863636,116.30888],
+[39.96366647727273,116.30898],
+[39.963699715909094,116.30908000000001],
+[39.96302843989773,116.30727000000007],
+[39.963766193181826,116.30928000000002],
+[39.96383267045455,116.30948000000002],
+[39.963932386363645,116.30978000000003],
+[39.963965625000014,116.30988000000004],
+[39.96399886363638,116.30998000000004],
+[39.96403210227274,116.31008000000004],
+[39.96386590909092,116.30958000000003],
+[39.96409857954547,116.31028000000005],
+[39.963732954545456,116.30918000000001],
+[39.9641650568182,116.31048000000006],
+[39.96406534090911,116.31018000000005],
+[39.964198295454565,116.31058000000006],
+[39.96413181818184,116.31038000000005],
+[39.9642647727273,116.31078000000007],
+[39.964231534090935,116.31068000000006],
+[39.96436448863639,116.31108000000008],
+[39.96429801136366,116.31088000000007],
+[39.964397727272754,116.31118000000008],
+[39.96443096590912,116.31128000000008],
+[39.964464204545486,116.31138000000009],
+[39.96314199488494,116.30757000000008],
+[39.96433125000003,116.31098000000007],
+[39.96456392045458,116.3116800000001],
+[39.96453068181822,116.31158000000009],
+[39.96463039772731,116.3118800000001],
+[39.964663636363674,116.3119800000001],
+[39.96449744318185,116.31148000000009],
+[39.96459715909094,116.3117800000001],
+[39.964730113636406,116.31218000000011],
+[39.96477,116.3123],
+[39.96480454545455,116.3124],
+[39.964839090909095,116.3125],
+[39.96476335227277,116.31228000000011],
+[39.96469687500004,116.31208000000011],
+[39.964942727272735,116.31280000000001],
+[39.96487363636364,116.3126],
+[39.96497727272728,116.31290000000001],
+[39.965046363636375,116.31310000000002],
+[39.96511545454547,116.31330000000003],
+[39.96508090909092,116.31320000000002],
+[39.96515000000001,116.31340000000003],
+[39.965184545454555,116.31350000000003],
+[39.96501181818183,116.31300000000002],
+[39.96490818181819,116.3127],
+[39.96525363636365,116.31370000000004],
+[39.96535727272729,116.31400000000005],
+[39.965391818181836,116.31410000000005],
+[39.96542636363638,116.31420000000006],
+[39.965288181818195,116.31380000000004],
+[39.96532272727274,116.31390000000005],
+[39.965495454545476,116.31440000000006],
+[39.96553000000002,116.31450000000007],
+[39.96556454545457,116.31460000000007],
+[39.965599090909116,116.31470000000007],
+[39.96563363636366,116.31480000000008],
+[39.965702727272756,116.31500000000008],
+[39.96566818181821,116.31490000000008],
+[39.96572,116.31505],
+[39.96389914772728,116.30968000000003],
+[39.96379943181819,116.30938000000002],
+[39.9652190909091,116.31360000000004],
+[39.96546090909093,116.31430000000006],
+[39.96572,116.31505],
+[39.96551999999999,116.31512058823529],
+[39.965619999999994,116.31508529411765],
+[39.96541999999999,116.31515588235294],
+[39.96511999999998,116.31526176470588],
+[39.965019999999974,116.31529705882353],
+[39.96491999999997,116.31533235294118],
+[39.96487,116.31535],
+[39.964769999999994,116.31540384615384],
+[39.96466999999999,116.31545769230769],
+[39.96456999999999,116.31551153846154],
+[39.964469999999984,116.3155653846154],
+[39.96436999999998,116.31561923076924],
+[39.96426999999998,116.31567307692309],
+[39.964169999999974,116.31572692307694],
+[39.96409,116.31577],
+[39.963989999999995,116.3158024074074],
+[39.96388999999999,116.31583481481482],
+[39.96521999999998,116.31522647058824],
+[39.96378999999999,116.31586722222222],
+[39.965319999999984,116.31519117647059],
+[39.96348999999998,116.31596444444445],
+[39.963689999999986,116.31589962962963],
+[39.96318999999997,116.31606166666667],
+[39.963389999999976,116.31599685185186],
+[39.96301,116.31612],
+[39.96328999999997,116.31602925925927],
+[39.962909999999994,116.31615076923077],
+[39.96270999999999,116.31621230769231],
+[39.963089999999966,116.31609407407409],
+[39.96250999999998,116.31627384615385],
+[39.962609999999984,116.31624307692309],
+[39.962309999999974,116.3163353846154],
+[39.96220999999997,116.31636615384616],
+[39.96210999999997,116.31639692307694],
+[39.9621,116.3164],
+[39.96280999999999,116.31618153846154],
+[39.961999999999996,116.31640970873787],
+[39.96179999999999,116.31642912621359],
+[39.961699999999986,116.31643883495146],
+[39.96159999999998,116.31644854368932],
+[39.96149999999998,116.3164582524272],
+[39.96189999999999,116.31641941747573],
+[39.961399999999976,116.31646796116506],
+[39.96119999999997,116.31648737864079],
+[39.961099999999966,116.31649708737865],
+[39.96107,116.3165],
+[39.96129999999997,116.31647766990292],
+[39.960969999999996,116.31651132596686],
+[39.96076999999999,116.31653397790056],
+[39.960669999999986,116.31654530386741],
+[39.96056999999998,116.31655662983425],
+[39.96046999999998,116.3165679558011],
+[39.96086999999999,116.31652265193371],
+[39.960369999999976,116.31657928176796],
+[39.96016999999997,116.31660193370166],
+[39.960069999999966,116.31661325966851],
+[39.95996999999996,116.31662458563537],
+[39.96026999999997,116.31659060773481],
+[39.96240999999998,116.31630461538462],
+[39.959769999999956,116.31664723756907],
+[39.95986999999996,116.31663591160222],
+[39.95956999999995,116.31666988950276],
+[39.959469999999946,116.31668121546961],
+[39.95926999999994,116.31670386740332],
+[39.959169999999936,116.31671519337017],
+[39.95906999999993,116.31672651933702],
+[39.95896999999993,116.31673784530388],
+[39.958869999999926,116.31674917127073],
+[39.95876999999992,116.31676049723758],
+[39.95866999999992,116.31677182320442],
+[39.958569999999916,116.31678314917127],
+[39.96358999999998,116.31593203703704],
+[39.95966999999995,116.31665856353592],
+[39.95836999999991,116.31680580110498],
+[39.9581699999999,116.31682845303868],
+[39.95846999999991,116.31679447513812],
+[39.9580699999999,116.31683977900553],
+[39.95826999999991,116.31681712707183],
+[39.95786999999989,116.31686243093924],
+[39.95766999999989,116.31688508287293],
+[39.95776999999989,116.31687375690609],
+[39.95746999999988,116.31690773480663],
+[39.95735,116.31692828571428],
+[39.95756999999988,116.31689640883978],
+[39.95936999999994,116.31669254143647],
+[39.957249999999995,116.31694657142856],
+[39.95714999999999,116.31696485714285],
+[39.956949999999985,116.31700142857143],
+[39.95674999999998,116.317038],
+[39.95684999999998,116.3170197142857],
+[39.956649999999975,116.31705628571429],
+[39.95644999999997,116.31709285714285],
+[39.956349999999965,116.31711114285714],
+[39.95624999999996,116.31712942857143],
+[39.95614999999996,116.31714771428571],
+[39.956049999999955,116.317166],
+[39.95654999999997,116.31707457142858],
+[39.95584999999995,116.31720257142858],
+[39.955749999999945,116.31722085714286],
+[39.9557,116.31723],
+[39.9579699999999,116.31685110497239],
+[39.95704999999999,116.31698314285714],
+[39.95594999999995,116.31718428571429],
+[39.95745,116.31691],
+[39.9557,116.31723],
+[39.9556703125,116.31712999999999],
+[39.955640624999994,116.31702999999999],
+[39.9556109375,116.31692999999999],
+[39.955581249999994,116.31682999999998],
+[39.95552187499999,116.31662999999998],
+[39.95551388349514,116.31649],
+[39.95555156249999,116.31672999999998],
+[39.95551776699029,116.31639],
+[39.955525533980584,116.31618999999999],
+[39.955529417475724,116.31608999999999],
+[39.95553330097087,116.31598999999999],
+[39.95553718446602,116.31588999999998],
+[39.955541067961164,116.31578999999998],
+[39.95554495145631,116.31568999999998],
+[39.95554883495146,116.31558999999997],
+[39.955552718446604,116.31548999999997],
+[39.95552165048544,116.31629],
+[39.95551,116.31659],
+[39.95556048543689,116.31528999999996],
+[39.955568252427184,116.31508999999996],
+[39.95557213592233,116.31498999999995],
+[39.955579902912625,116.31478999999995],
+[39.95558378640777,116.31468999999994],
+[39.95558766990292,116.31458999999994],
+[39.95559,116.31453],
+[39.95555660194175,116.31538999999997],
+[39.95559352644836,116.31433],
+[39.95556436893204,116.31518999999996],
+[39.95559705289673,116.31412999999999],
+[39.95559881612091,116.31402999999999],
+[39.95560057934509,116.31392999999998],
+[39.95560234256927,116.31382999999998],
+[39.955604105793455,116.31372999999998],
+[39.95560586901763,116.31362999999997],
+[39.955607632241815,116.31352999999997],
+[39.955609395466,116.31342999999997],
+[39.955611158690175,116.31332999999997],
+[39.95561292191436,116.31322999999996],
+[39.95561468513854,116.31312999999996],
+[39.955616448362726,116.31302999999996],
+[39.9556182115869,116.31292999999995],
+[39.955619974811086,116.31282999999995],
+[39.95562173803527,116.31272999999995],
+[39.955623501259446,116.31262999999994],
+[39.95562526448363,116.31252999999994],
+[39.95562702770781,116.31242999999994],
+[39.95562879093199,116.31232999999993],
+[39.95563055415617,116.31222999999993],
+[39.955632317380356,116.31212999999993],
+[39.95563408060454,116.31202999999992],
+[39.955635843828716,116.31192999999992],
+[39.9556376070529,116.31182999999992],
+[39.95563937027708,116.31172999999991],
+[39.95564113350126,116.31162999999991],
+[39.95564289672544,116.3115299999999],
+[39.95564465994963,116.3114299999999],
+[39.9556464231738,116.3113299999999],
+[39.95564818639799,116.3112299999999],
+[39.95564994962217,116.31112999999989],
+[39.955651712846354,116.31102999999989],
+[39.95565347607053,116.31092999999989],
+[39.955655239294714,116.31082999999988],
+[39.9556570025189,116.31072999999988],
+[39.955658765743074,116.31062999999988],
+[39.955591763224184,116.31443],
+[39.95566,116.31056],
+[39.955595289672544,116.31423],
+[39.95565896373057,116.31045999999999],
+[39.95565689119171,116.31025999999999],
+[39.955655854922284,116.31015999999998],
+[39.95565481865285,116.31005999999998],
+[39.95565274611399,116.30985999999997],
+[39.95565170984456,116.30975999999997],
+[39.95565067357513,116.30965999999997],
+[39.955649637305704,116.30955999999996],
+[39.95564860103627,116.30945999999996],
+[39.95564756476684,116.30935999999996],
+[39.95564652849741,116.30925999999995],
+[39.95564549222798,116.30915999999995],
+[39.95564445595855,116.30905999999995],
+[39.95564341968912,116.30895999999994],
+[39.95564238341969,116.30885999999994],
+[39.95564134715026,116.30875999999994],
+[39.95564031088083,116.30865999999993],
+[39.95564,116.30863],
+[39.95564141509434,116.30852999999999],
+[39.95564283018868,116.30842999999999],
+[39.95564424528302,116.30832999999998],
+[39.95564566037736,116.30822999999998],
+[39.9556470754717,116.30812999999998],
+[39.95564849056604,116.30802999999997],
+[39.95564990566038,116.30792999999997],
+[39.95565132075472,116.30782999999997],
+[39.95565273584906,116.30772999999996],
+[39.955654150943396,116.30762999999996],
+[39.955655566037734,116.30752999999996],
+[39.95565698113207,116.30742999999995],
+[39.95565839622642,116.30732999999995],
+[39.95565981132076,116.30722999999995],
+[39.955661226415096,116.30712999999994],
+[39.955662641509434,116.30702999999994],
+[39.95566405660377,116.30692999999994],
+[39.95566547169811,116.30682999999993],
+[39.95566688679245,116.30672999999993],
+[39.95566830188679,116.30662999999993],
+[39.955669716981134,116.30652999999992],
+[39.95567,116.30651],
+[39.95566953051643,116.30641],
+[39.955669061032864,116.30631],
+[39.95566859154929,116.30621],
+[39.955668122065724,116.30610999999999],
+[39.95566765258216,116.30600999999999],
+[39.95566718309859,116.30590999999998],
+[39.955666713615024,116.30580999999998],
+[39.95566624413146,116.30570999999998],
+[39.95566577464788,116.30560999999997],
+[39.95566530516432,116.30550999999997],
+[39.95566483568075,116.30540999999997],
+[39.95566436619718,116.30530999999996],
+[39.95566389671362,116.30520999999996],
+[39.95566342723005,116.30510999999996],
+[39.955662957746476,116.30500999999995],
+[39.95566201877934,116.30480999999995],
+[39.95557601941748,116.31488999999995],
+[39.955661549295776,116.30470999999994],
+[39.95566107981221,116.30460999999994],
+[39.95566061032864,116.30450999999994],
+[39.95566014084507,116.30440999999993],
+[39.95566,116.30438],
+[39.95566,116.30427999999999],
+[39.95566,116.30417999999999],
+[39.95566,116.30407999999998],
+[39.95566,116.30397999999998],
+[39.95566,116.30387999999998],
+[39.95566,116.30377999999997],
+[39.95566,116.30367999999997],
+[39.95566,116.30357999999997],
+[39.95566,116.30347999999996],
+[39.95566,116.30337999999996],
+[39.95566,116.30327999999996],
+[39.95566,116.30317999999995],
+[39.95566,116.30309],
+[39.95566248826291,116.30490999999995],
+[39.95565378238342,116.30995999999998],
+[39.95565792746114,116.31035999999999],
+[39.956060000000015,116.30301977099236],
+[39.95596000000001,116.30303732824427],
+[39.95616000000002,116.30300221374046],
+[39.95566,116.30309],
+[39.956360000000025,116.30296709923664],
+[39.95646000000003,116.30294954198473],
+[39.95656000000003,116.30293198473281],
+[39.956660000000035,116.3029144274809],
+[39.956960000000045,116.30286175572517],
+[39.95697,116.30286],
+[39.95676000000004,116.30289687022899],
+[39.957170000000005,116.30283215189873],
+[39.95727000000001,116.30281822784809],
+[39.95737000000001,116.30280430379746],
+[39.95586000000001,116.30305488549618],
+[39.95686000000004,116.30287931297708],
+[39.957470000000015,116.30279037974682],
+[39.95767000000002,116.30276253164556],
+[39.957770000000025,116.30274860759494],
+[39.95787000000003,116.3027346835443],
+[39.95797000000003,116.30272075949367],
+[39.958070000000035,116.30270683544303],
+[39.95827000000004,116.30267898734176],
+[39.95626000000002,116.30298465648855],
+[39.958370000000045,116.30266506329113],
+[39.95847000000005,116.3026511392405],
+[39.95855,116.30264],
+[39.958650000000006,116.3026134375],
+[39.95875000000001,116.30258687499999],
+[39.95885000000001,116.30256031249999],
+[39.95905000000002,116.3025071875],
+[39.958950000000016,116.30253375],
+[39.95915000000002,116.30248062499999],
+[39.95919,116.30247],
+[39.955760000000005,116.30307244274809],
+[39.959390000000006,116.30242272727273],
+[39.95949000000001,116.30239909090909],
+[39.95959000000001,116.30237545454546],
+[39.959690000000016,116.30235181818182],
+[39.95974,116.30234],
+[39.95984,116.30233024390245],
+[39.960040000000006,116.30231073170732],
+[39.96014000000001,116.30230097560975],
+[39.95817000000004,116.3026929113924],
+[39.96015,116.3023],
+[39.95929,116.30244636363636],
+[39.96025,116.30227500000001],
+[39.96045000000001,116.30222499999999],
+[39.96051,116.30221],
+[39.96061,116.30219461538462],
+[39.960710000000006,116.30217923076923],
+[39.96081000000001,116.30216384615385],
+[39.96091000000001,116.30214846153847],
+[39.961010000000016,116.30213307692308],
+[39.96103,116.30213],
+[39.95757000000002,116.30277645569619],
+[39.95707,116.30284607594936],
+[39.960350000000005,116.30225],
+[39.95994,116.30232048780488],
+];
+// create an orange rectangle
+	for(var i=0;i<geohash_bound.length;i++){
+		//L.rectangle([geohash_bound[i],geohash_bound[i]], {color: "yellow", weight: 8}).addTo(map);
+	}
+});
+
+L.rectangle([[39.95551,116.30213],[39.96572,116.31723]], {color: "yellow", weight: 8}).addTo(map);
+	//alert("geohash_coords:"+coords);
+
+//判断点是否在多边形geohash块序列范围内
+    var callBackFn = function(e) {
+        //alert('您在[ '+e.latlng.lat+','+e.latlng.lng+' ]的位置点击了地图！');
+				
+        var isInArea = false;
+        var cpos = new Array(),tmp;
+        var curgeohash = encode_geohash_point(e.latlng.lng, e.latlng.lat,14);
+        var g0 = geohashs[0];
+        var g0lenth = g0.length;
+        var curgeohash_c = curgeohash.substr(0,g0lenth);
+        for (var i=0; i<geohashs.length;i++ )
+        {
+        		tmp = geohashs[i];
+        		if(tmp == curgeohash_c){
+        			isInArea = true;
+        			break;
+        		}
+	    }   
+
+        if( isInArea == false ) {
+        		alert('点击位置为[ '+e.latlng.lat+','+e.latlng.lng+' ]！'+'\n'+'点在多边形外');
+            //alert('点在多边形外');
+        } else {
+        		alert('点击位置为[ '+e.latlng.lat+','+e.latlng.lng+' ]！'+'\n'+'点在多边形内');
+            //alert('点在多边形内');
+        }
+
+    }
+    map.on('click', callBackFn);			
+			
+	</script>
+</body>
+</html>
